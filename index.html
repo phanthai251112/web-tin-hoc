@@ -3,76 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Bài Tập Tin Học</title>
+    <title>Hệ thống Nộp Bài Tin Học</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f0f2f5; color: #1c1e21; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2, h3 { color: #1877f2; margin-top: 0; }
-        input, textarea { width: 100%; margin-bottom: 10px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; background: #1877f2; color: white; font-weight: bold; cursor: pointer; }
-        button:hover { background: #166fe5; }
-        .btn-red { background: #dc3545; } 
-        .btn-green { background: #28a745; }
-        .hidden { display: none; }
-        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #fff; }
-        .admin-panel { border: 2px dashed #f0ad4e; background: #fffdf0; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        body { font-family: 'Roboto', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; color: #333; }
         
-        /* Bảng danh sách học sinh */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        /* Khung chính */
+        .container { background: white; width: 100%; max-width: 900px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); overflow: hidden; margin: 20px; min-height: 500px; display: flex; flex-direction: column; }
         
-        /* Thông báo lỗi/thành công */
-        .status-msg { text-align: center; margin-top: 10px; font-weight: bold; }
+        /* Header */
+        .header { background: #fff; padding: 20px 40px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; color: #764ba2; font-size: 24px; }
+        
+        /* Phần nội dung */
+        .content { padding: 40px; flex: 1; }
+
+        /* Form đăng nhập đẹp */
+        .login-wrapper { max-width: 400px; margin: 0 auto; text-align: center; padding-top: 20px; }
+        .login-wrapper h3 { font-size: 28px; color: #333; margin-bottom: 10px; }
+        .login-wrapper p { color: #666; margin-bottom: 30px; }
+        
+        input, textarea { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #e1e1e1; border-radius: 10px; background: #f9f9f9; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus, textarea:focus { border-color: #764ba2; background: #fff; outline: none; }
+        
+        button { width: 100%; padding: 15px; border: none; border-radius: 10px; background: linear-gradient(to right, #764ba2, #667eea); color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(118, 75, 162, 0.6); }
+        button.btn-logout { background: #ffebee; color: #d32f2f; width: auto; padding: 8px 20px; box-shadow: none; font-size: 14px; }
+        button.btn-logout:hover { background: #ffcdd2; }
+
+        /* Card bài tập */
+        .card { background: #fff; border: 1px solid #eee; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .card h4 { margin-top: 0; color: #4a4a4a; font-size: 20px; }
+        
+        /* Khu vực Admin */
+        .admin-panel { background: #f3f0ff; border: 2px dashed #764ba2; padding: 25px; border-radius: 15px; margin-bottom: 30px; }
+        .admin-title { color: #764ba2; font-weight: bold; margin-bottom: 15px; display: block; font-size: 18px; }
+
+        .hidden { display: none !important; }
+        .error-msg { color: #ff3333; background: #ffe6e6; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="margin:0;">Bài Tập Tin Học</h2>
+    <div class="header">
+        <h2>📘 Nộp Bài Tin Học</h2>
         <div id="userInfo" class="hidden">
-            Xin chào, <b id="userEmail" style="color:#1877f2"></b>
-            <button onclick="logout()" class="btn-red" style="width:auto; padding: 5px 15px; margin-left:10px;">Thoát</button>
+            <span style="margin-right: 10px;">Xin chào, <b id="userDisplay"></b></span>
+            <button onclick="logout()" class="btn-logout">Đăng xuất</button>
         </div>
     </div>
 
-    <div id="authSection">
-        <h3 style="text-align:center;">Đăng Nhập Hệ Thống</h3>
-        <p style="text-align:center; color:#666; font-size:0.9em;">(Học sinh nhập tài khoản Giáo viên đã cấp)</p>
-        <input type="text" id="loginName" placeholder="Tên đăng nhập (Ví dụ:hs_lop10)">
-        <input type="password" id="loginPass" placeholder="Mật khẩu">
-        <button onclick="login()">Đăng Nhập</button>
-        <p id="loginMsg" class="status-msg" style="color:red;"></p>
-    </div>
+    <div class="content">
+        <div id="authSection" class="login-wrapper">
+            <h3>Đăng Nhập</h3>
+            <p>Hệ thống dành cho Học sinh & Giáo viên</p>
+            <input type="text" id="loginName" placeholder="Tên đăng nhập (VD: phanthai25)">
+            <input type="password" id="loginPass" placeholder="Mật khẩu">
+            <button onclick="login()">Vào Hệ Thống</button>
+            <div id="loginMsg" class="error-msg"></div>
+        </div>
 
-    <div id="adminSection" class="hidden">
-        <div class="admin-panel">
-            <h3>👤 Cấp Tài Khoản Học Sinh Mới</h3>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="newStudentName" placeholder="Tên đăng nhập HS (VD: nam_lop10)">
-                <input type="text" id="newStudentPass" placeholder="Mật khẩu cho HS">
+        <div id="adminSection" class="hidden">
+            <div class="admin-panel">
+                <span class="admin-title">👤 Quản Lý Học Sinh (Cấp Tài Khoản)</span>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newStudentName" placeholder="Tên HS (VD: hs01)" style="margin-bottom:0">
+                    <input type="text" id="newStudentPass" placeholder="Mật khẩu" style="margin-bottom:0">
+                    <button onclick="createStudentAccount()" style="width: auto; margin-bottom:0">Tạo</button>
+                </div>
+                <p id="adminMsg" style="margin-top: 10px; color: green;"></p>
             </div>
-            <button onclick="createStudentAccount()" class="btn-green">Tạo Tài Khoản</button>
-            <p id="adminMsg" class="status-msg" style="color:blue;"></p>
-            
-            <details>
-                <summary style="cursor:pointer; margin-top:15px; font-weight:bold; color:#555;">🔻 Xem danh sách tài khoản đã cấp</summary>
-                <div id="studentList">Đang tải...</div>
-            </details>
+
+            <div class="admin-panel" style="background: #e3f2fd; border-color: #2196f3;">
+                <span class="admin-title" style="color: #1565c0;">📝 Đăng Bài Tập Mới</span>
+                <input type="text" id="qTitle" placeholder="Tiêu đề bài tập">
+                <textarea id="qContent" rows="3" placeholder="Nội dung đề bài..."></textarea>
+                <button onclick="postQuestion()" style="background: #1565c0;">Đăng Ngay</button>
+            </div>
         </div>
 
-        <div class="admin-panel" style="border-color: #007bff; background: #f0f8ff;">
-            <h3>📝 Đăng Đề Bài Mới</h3>
-            <input type="text" id="questionTitle" placeholder="Tiêu đề bài tập">
-            <textarea id="questionContent" rows="3" placeholder="Nội dung đề bài..."></textarea>
-            <button onclick="postQuestion()">Đăng Đề Bài</button>
+        <div id="mainApp" class="hidden">
+            <h3 style="margin-bottom: 20px; color: #555;">Danh sách bài tập hiện có</h3>
+            <div id="questionsList">Đang tải dữ liệu...</div>
         </div>
-    </div>
-
-    <div id="mainApp" class="hidden">
-        <h3>Danh sách bài tập</h3>
-        <div id="questionsList">Đang tải dữ liệu...</div>
     </div>
 </div>
 
@@ -80,10 +95,10 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, setDoc, doc } 
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CẤU HÌNH (Đã điền sẵn mã của bạn) ---
+    // --- CONFIG CỦA BẠN ---
     const firebaseConfig = {
         apiKey: "AIzaSyBTNqv64uDH4lCqbgYz3_c7YBwA7LCmTMw",
         authDomain: "tinhoc-1845e.firebaseapp.com",
@@ -94,178 +109,130 @@
         measurementId: "G-JKRLEH0B2T"
     };
 
-    // Khởi tạo
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const DOMAIN = "@tinoc.com"; // Đuôi email ẩn để lách luật Firebase
+    const DOMAIN = "@tinoc.com"; // Đuôi email mặc định
 
-    // --- 1. ĐĂNG NHẬP ---
+    // --- LOGIN ---
     window.login = async () => {
         let name = document.getElementById('loginName').value.trim();
-        let pass = document.getElementById('loginPass').value.trim();
+        const pass = document.getElementById('loginPass').value;
+        const msgBox = document.getElementById('loginMsg');
         
-        // Tự động thêm đuôi @tinoc.com nếu người dùng nhập thiếu
+        if(!name || !pass) return alert("Vui lòng nhập đủ thông tin");
+
+        // Tự động thêm đuôi nếu chưa có
         if (!name.includes("@")) name += DOMAIN;
+
+        msgBox.style.display = 'none';
 
         try {
             await signInWithEmailAndPassword(auth, name, pass);
-        } catch (err) { 
-            console.error(err);
-            document.getElementById('loginMsg').innerText = "Sai tài khoản hoặc mật khẩu!";
+        } catch (err) {
+            msgBox.style.display = 'block';
+            // Báo lỗi chi tiết để bạn biết sai ở đâu
+            msgBox.innerHTML = `<b>Đăng nhập thất bại!</b><br>
+            Hệ thống đang thử đăng nhập với email: <b>${name}</b><br>
+            Lỗi: Mật khẩu sai hoặc Tài khoản này chưa được tạo trên Firebase.`;
         }
     }
 
     window.logout = () => signOut(auth);
 
-    // --- 2. ADMIN: TẠO TÀI KHOẢN CHO HỌC SINH ---
+    // --- ADMIN TẠO USER ---
     window.createStudentAccount = async () => {
         const name = document.getElementById('newStudentName').value.trim();
         const pass = document.getElementById('newStudentPass').value.trim();
-        
-        if(!name || !pass) return alert("Vui lòng nhập đủ Tên và Mật khẩu!");
-        
-        // Kiểm tra tên không được chứa ký tự đặc biệt hoặc khoảng trắng
-        if (!/^[a-zA-Z0-9_]+$/.test(name)) return alert("Tên đăng nhập chỉ được viết liền không dấu (ví dụ: nam_lop10)");
+        if(!name || !pass) return alert("Thiếu thông tin!");
 
         const fullEmail = name + DOMAIN;
-        document.getElementById('adminMsg').innerText = "Đang tạo tài khoản...";
-        
-        try {
-            // MẸO: Dùng 'Secondary App' để tạo user mới mà không làm Admin bị văng ra
-            const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-            const secondaryAuth = getAuth(secondaryApp);
-            
-            await createUserWithEmailAndPassword(secondaryAuth, fullEmail, pass);
-            await signOut(secondaryAuth); // Xóa phiên phụ ngay
-            
-            // Lưu thông tin vào CSDL để Admin quản lý danh sách
-            await setDoc(doc(db, "users_list", name), {
-                username: name,
-                password: pass, // Lưu pass để nhắc nếu HS quên (chỉ Admin thấy)
-                createdAt: serverTimestamp()
-            });
+        document.getElementById('adminMsg').innerText = "Đang xử lý...";
 
-            alert("✅ Đã tạo thành công: " + name);
+        try {
+            const tempApp = initializeApp(firebaseConfig, "TempApp");
+            const tempAuth = getAuth(tempApp);
+            await createUserWithEmailAndPassword(tempAuth, fullEmail, pass);
+            await signOut(tempAuth);
+            
+            document.getElementById('adminMsg').innerText = `✅ Đã tạo thành công: ${name} (Mật khẩu: ${pass})`;
             document.getElementById('newStudentName').value = "";
             document.getElementById('newStudentPass').value = "";
-            document.getElementById('adminMsg').innerText = "";
-            loadStudentList(); // Cập nhật lại bảng danh sách
-
-        } catch (err) {
-            console.error(err);
-            if(err.code === 'auth/email-already-in-use') {
-                alert("Lỗi: Tên tài khoản '" + name + "' đã có người dùng rồi!");
-            } else {
-                alert("Lỗi: " + err.message);
-            }
-            document.getElementById('adminMsg').innerText = "";
-        }
-    }
-
-    // Tải danh sách học sinh đã cấp
-    async function loadStudentList() {
-        const listDiv = document.getElementById('studentList');
-        try {
-            const q = query(collection(db, "users_list"), orderBy("createdAt", "desc"));
-            const snap = await getDocs(q);
-            
-            if(snap.empty) { listDiv.innerHTML = "Chưa cấp tài khoản nào."; return; }
-            
-            let html = "<table><tr><th>Tên Đăng Nhập</th><th>Mật khẩu</th></tr>";
-            snap.forEach(d => {
-                const data = d.data();
-                html += `<tr><td><b>${data.username}</b></td><td>${data.password}</td></tr>`;
-            });
-            listDiv.innerHTML = html + "</table>";
         } catch (e) {
-             listDiv.innerHTML = "Chưa thể tải danh sách (Cần đăng bài viết đầu tiên để khởi tạo Database)";
+            document.getElementById('adminMsg').innerText = "Lỗi: Tên này đã tồn tại hoặc quá ngắn.";
         }
     }
 
-    // --- 3. XỬ LÝ GIAO DIỆN (Ẩn/Hiện Admin) ---
+    // --- APP LOGIC ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // Đăng nhập thành công
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('userInfo').classList.remove('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
-            const username = user.email.replace(DOMAIN, "");
-            document.getElementById('userEmail').innerText = username;
+            const shortName = user.email.replace(DOMAIN, "");
+            document.getElementById('userDisplay').innerText = shortName;
 
-            // KIỂM TRA: Nếu là 'phanthai25' hoặc tên có chứa 'admin' thì hiện bảng Admin
-            if(username === "phanthai25" || user.email.includes("admin")) {
+            // Check Admin
+            if(shortName === "phanthai25" || user.email.includes("admin")) {
                 document.getElementById('adminSection').classList.remove('hidden');
-                loadStudentList();
             } else {
                 document.getElementById('adminSection').classList.add('hidden');
             }
             loadQuestions();
         } else {
-            // Chưa đăng nhập
             document.getElementById('authSection').classList.remove('hidden');
             document.getElementById('userInfo').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('adminSection').classList.add('hidden');
-            document.getElementById('loginName').value = "";
-            document.getElementById('loginPass').value = "";
         }
     });
 
-    // --- 4. ĐĂNG BÀI & NỘP BÀI ---
     window.postQuestion = async () => {
-        const title = document.getElementById('questionTitle').value;
-        const content = document.getElementById('questionContent').value;
-        if(!title) return alert("Thiếu tiêu đề!");
+        const title = document.getElementById('qTitle').value;
+        const content = document.getElementById('qContent').value;
+        if(!title) return alert("Thiếu tiêu đề");
         
         await addDoc(collection(db, "questions"), {
             title, content, createdAt: serverTimestamp(), createdBy: auth.currentUser.email
         });
-        alert("Đã đăng bài tập mới!"); 
-        document.getElementById('questionTitle').value = "";
-        document.getElementById('questionContent').value = "";
+        alert("Đã đăng bài!");
+        document.getElementById('qTitle').value = "";
+        document.getElementById('qContent').value = "";
         loadQuestions();
     }
 
     async function loadQuestions() {
-        const qList = document.getElementById('questionsList');
-        qList.innerHTML = "Đang tải...";
+        const list = document.getElementById('questionsList');
+        list.innerHTML = "Đang tải...";
         const q = query(collection(db, "questions"), orderBy("createdAt", "desc"));
         const snap = await getDocs(q);
+        list.innerHTML = "";
         
-        qList.innerHTML = "";
-        if(snap.empty) { qList.innerHTML = "<p>Chưa có bài tập nào.</p>"; return; }
+        if(snap.empty) { list.innerHTML = "<p style='text-align:center; color:#999'>Chưa có bài tập nào.</p>"; return; }
 
-        snap.forEach((doc) => {
-            const data = doc.data();
+        snap.forEach(doc => {
+            const d = doc.data();
             const div = document.createElement('div');
             div.className = 'card';
             div.innerHTML = `
-                <h4>${data.title}</h4>
-                <p style="white-space: pre-wrap;">${data.content}</p>
-                <small style="color:gray">Đăng bởi: ${data.createdBy.replace(DOMAIN,"")}</small>
-                <hr style="margin:10px 0; border:0; border-top:1px solid #eee;">
-                <textarea id="ans-${doc.id}" rows="2" placeholder="Học sinh dán Link code hoặc nội dung bài làm vào đây..."></textarea>
-                <button onclick="submitWork('${doc.id}')" style="width:auto; margin-top:5px;">Nộp Bài</button>
+                <h4>${d.title}</h4>
+                <p>${d.content}</p>
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                <textarea id="ans-${doc.id}" rows="2" placeholder="Nhập link bài làm hoặc code..."></textarea>
+                <button onclick="submit('${doc.id}')" style="width:auto; font-size:14px; padding:10px 20px;">Nộp Bài</button>
             `;
-            qList.appendChild(div);
+            list.appendChild(div);
         });
     }
 
-    window.submitWork = async (qid) => {
-        const ans = document.getElementById(`ans-${qid}`).value;
-        if(!ans) return alert("Bạn chưa nhập nội dung bài làm!");
-        
-        try {
-            await addDoc(collection(db, "submissions"), {
-                qid, 
-                student: auth.currentUser.email.replace(DOMAIN, ""), 
-                answer: ans, 
-                time: serverTimestamp()
-            });
-            alert("Nộp bài thành công!");
-        } catch(e) { alert("Lỗi: " + e.message); }
+    window.submit = async (id) => {
+        const val = document.getElementById(`ans-${id}`).value;
+        if(!val) return alert("Chưa nhập bài làm!");
+        await addDoc(collection(db, "submissions"), {
+            qid: id, student: auth.currentUser.email, answer: val, time: serverTimestamp()
+        });
+        alert("Nộp thành công!");
     }
 </script>
 </body>
