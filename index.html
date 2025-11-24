@@ -3,96 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống LMS Tin Học</title>
+    <title>Hệ Thống LMS Tin Học V3</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
+    
     <style>
-        :root { --primary: #6c5ce7; --secondary: #a29bfe; --dark: #2d3436; --light: #f5f6fa; --success: #00b894; --danger: #d63031; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #dfe6e9; margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden; }
+        :root { --primary: #2980b9; --secondary: #3498db; --dark: #2c3e50; --light: #ecf0f1; --success: #27ae60; --danger: #c0392b; }
+        body { font-family: 'Segoe UI', sans-serif; background: #ecf0f1; margin: 0; height: 100vh; display: flex; overflow: hidden; }
         
-        /* Layout */
-        .sidebar { width: 250px; background: var(--dark); color: white; display: flex; flex-direction: column; transition: 0.3s; }
-        .sidebar-header { padding: 20px; text-align: center; background: var(--primary); font-weight: bold; font-size: 1.2em; }
-        .menu-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #444; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
-        .menu-item:hover, .menu-item.active { background: var(--secondary); color: var(--dark); }
-        .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--dark); color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: var(--primary); font-weight: bold; text-align: center; font-size: 1.2em; }
+        .menu-item { padding: 15px 20px; border-bottom: 1px solid #34495e; cursor: pointer; transition: 0.2s; display: flex; gap: 10px; align-items: center; }
+        .menu-item:hover, .menu-item.active { background: var(--secondary); }
         
-        /* Màn hình đăng nhập */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-box { background: white; padding: 40px; border-radius: 15px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        
-        /* Form elements */
-        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
-        button:hover { opacity: 0.9; }
-        .btn-sm { width: auto; padding: 5px 10px; font-size: 0.9em; }
-        .btn-danger { background: var(--danger); }
-        
-        /* Cards */
-        .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; }
-        .tag-khoi { background: var(--success); }
-        .tag-type { background: #0984e3; }
-        
-        /* Quiz Style */
-        .quiz-option { display: block; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
-        .quiz-option:hover { background: #f1f2f6; }
-        .quiz-option.selected { background: var(--secondary); border-color: var(--primary); color: white; }
-        .quiz-result { margin-top: 10px; font-weight: bold; padding: 10px; border-radius: 5px; text-align: center; display: none; }
-        
+        /* Main */
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .hidden { display: none !important; }
         
-        /* Table User */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; }
+        /* UI Components */
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #bdc3c7; border-radius: 5px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        button.btn-success { background: var(--success); }
+        
+        /* Login */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 40px; border-radius: 10px; width: 350px; text-align: center; }
+
+        /* Quiz Style */
+        .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quiz-option { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; cursor: pointer; border-radius: 5px; }
+        .quiz-option.selected { background: var(--secondary); color: white; border-color: var(--primary); }
+        .result-box { margin-top: 10px; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; display: none; }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #eee; }
+
+        /* Import Box */
+        .import-box { border: 2px dashed #bdc3c7; padding: 15px; background: #f9f9f9; text-align: center; margin-top: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color: var(--primary);"><i class="fas fa-graduation-cap"></i> LMS Tin Học</h2>
-        <p>Hệ thống học tập trực tuyến</p>
-        <input type="text" id="loginUser" placeholder="Tên đăng nhập (VD: phanthai25)">
+        <h2 style="color: var(--primary);">QUẢN LÝ TIN HỌC</h2>
+        <input type="text" id="loginUser" placeholder="Tên đăng nhập">
         <input type="password" id="loginPass" placeholder="Mật khẩu">
-        <button onclick="login()">Đăng Nhập</button>
-        <p id="loginMsg" style="color: red; margin-top: 10px; font-size: 0.9em;"></p>
+        <button onclick="login()" style="width:100%">Đăng Nhập</button>
+        <p id="loginMsg" style="color:red; margin-top:10px; font-size:0.9em"></p>
     </div>
 </div>
 
-<div id="mainApp" class="hidden" style="width: 100%; height: 100%; display: flex;">
+<div id="mainApp" class="hidden" style="display:flex; height:100%">
     <div class="sidebar">
-        <div class="sidebar-header">QUẢN LÝ TIN HỌC</div>
-        
-        <div class="menu-item active" onclick="switchTab('tab-home')">
-            <i class="fas fa-home"></i> Trang Chủ / Bài Tập
-        </div>
+        <div class="sidebar-header">ADMIN PANEL</div>
+        <div class="menu-item active" onclick="switchTab('tab-home')"><i class="fas fa-home"></i> Trang Chủ / Bài Tập</div>
         
         <div id="adminMenu" class="hidden">
-            <div class="menu-item" onclick="switchTab('tab-users')">
-                <i class="fas fa-users-cog"></i> Quản Lý Tài Khoản
-            </div>
-            <div class="menu-item" onclick="switchTab('tab-create')">
-                <i class="fas fa-plus-circle"></i> Đăng Bài / Tạo Quiz
-            </div>
+            <div class="menu-item" onclick="switchTab('tab-users')"><i class="fas fa-users"></i> Quản Lý Học Sinh</div>
+            <div class="menu-item" onclick="switchTab('tab-create')"><i class="fas fa-file-alt"></i> Soạn Đề / Import</div>
         </div>
 
-        <div style="flex: 1;"></div>
-        <div class="menu-item" onclick="logout()" style="background: var(--danger);">
-            <i class="fas fa-sign-out-alt"></i> Đăng Xuất (<span id="uNameDisplay"></span>)
-        </div>
+        <div style="flex:1"></div>
+        <div class="menu-item" onclick="logout()" style="background:#c0392b"><i class="fas fa-sign-out-alt"></i> Đăng Xuất <span id="uDisplay" style="margin-left:5px; font-size:0.8em"></span></div>
     </div>
 
     <div class="main-content">
-        
         <div id="tab-home">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center">
                 <h2>📚 Danh Sách Bài Tập</h2>
-                <select id="filterGrade" onchange="loadQuestions()" style="width: 150px;">
+                <select id="filterGrade" onchange="loadQuestions()" style="width:150px">
                     <option value="all">Tất cả Khối</option>
-                    <option value="1">Khối 1</option><option value="2">Khối 2</option><option value="3">Khối 3</option>
-                    <option value="4">Khối 4</option><option value="5">Khối 5</option><option value="6">Khối 6</option>
-                    <option value="7">Khối 7</option><option value="8">Khối 8</option><option value="9">Khối 9</option>
+                    <option value="6">Khối 6</option><option value="7">Khối 7</option>
+                    <option value="8">Khối 8</option><option value="9">Khối 9</option>
                 </select>
             </div>
             <div id="questionsList">Đang tải...</div>
@@ -100,70 +88,87 @@
 
         <div id="tab-users" class="hidden">
             <h2>👥 Quản Lý Học Sinh</h2>
+            
             <div class="card">
-                <h3>Cấp Tài Khoản Mới</h3>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="newU" placeholder="Tên HS (VD: hs_lop6a)">
+                <h3>1. Tạo Thủ Công (Từng người)</h3>
+                <div style="display:flex; gap:10px">
+                    <input type="text" id="newU" placeholder="Tên HS (VD: nam_lop6)">
                     <input type="text" id="newP" placeholder="Mật khẩu">
-                    <button onclick="createUser()" class="btn-sm" style="width: 100px;">Tạo</button>
+                    <select id="newGrade" style="width:120px">
+                        <option value="6">Khối 6</option><option value="7">Khối 7</option>
+                        <option value="8">Khối 8</option><option value="9">Khối 9</option>
+                    </select>
+                    <button onclick="createUser()">Tạo</button>
                 </div>
-                <p id="userMsg" style="color: blue;"></p>
+                <p id="createMsg" style="color:blue"></p>
             </div>
+
             <div class="card">
-                <h3>Danh sách tài khoản & Mật khẩu</h3>
-                <div id="userTable">Đang tải...</div>
+                <h3>2. Nhập Từ Excel (Cả danh sách lớp)</h3>
+                <div class="import-box">
+                    <p>Chọn file Excel (.xlsx) gồm 3 cột: <b>Tên ĐN | Mật khẩu | Khối</b></p>
+                    <input type="file" id="excelUserFile">
+                    <button onclick="importUsers()" class="btn-success">🚀 Bắt Đầu Nhập Danh Sách</button>
+                    <p id="importMsg" style="margin-top:10px; font-weight:bold"></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Danh Sách Tài Khoản</h3>
+                <div id="userTable"></div>
             </div>
         </div>
 
         <div id="tab-create" class="hidden">
-            <h2>📝 Tạo Nội Dung Mới</h2>
+            <h2>📝 Soạn Thảo & Nhập Đề</h2>
+            
             <div class="card">
-                <select id="postType" onchange="togglePostForm()">
-                    <option value="assignment">📄 Bài Tập Tự Luận / Nộp File</option>
-                    <option value="quiz">✅ Bài Tập Trắc Nghiệm (Auto Chấm)</option>
+                <h3>1. Đăng Bài Thủ Công</h3>
+                <select id="pType" onchange="toggleType()">
+                    <option value="quiz">Trắc Nghiệm (Quiz)</option>
+                    <option value="assignment">Tự Luận / File</option>
                 </select>
-                
-                <select id="postGrade">
-                    <option value="0">-- Chọn Khối Lớp --</option>
-                    <option value="1">Khối 1</option><option value="2">Khối 2</option><option value="3">Khối 3</option>
-                    <option value="4">Khối 4</option><option value="5">Khối 5</option><option value="6">Khối 6</option>
-                    <option value="7">Khối 7</option><option value="8">Khối 8</option><option value="9">Khối 9</option>
+                <select id="pGrade">
+                    <option value="0">-- Chọn Khối --</option>
+                    <option value="6">Khối 6</option><option value="7">Khối 7</option>
+                    <option value="8">Khối 8</option><option value="9">Khối 9</option>
                 </select>
-
-                <input type="text" id="pTitle" placeholder="Tiêu đề bài tập">
-                <textarea id="pContent" rows="3" placeholder="Nội dung đề bài hoặc hướng dẫn..."></textarea>
+                <input type="text" id="pTitle" placeholder="Tiêu đề câu hỏi / bài tập">
+                <textarea id="pContent" rows="2" placeholder="Nội dung câu hỏi..."></textarea>
                 
-                <div id="fileSection">
-                    <input type="text" id="pLink" placeholder="Dán Link Google Drive/PDF/Word đề bài vào đây (Nếu có)">
-                </div>
-
-                <div id="quizSection" class="hidden" style="background: #f1f2f6; padding: 15px; border-radius: 5px;">
-                    <h4>Cấu hình Trắc Nghiệm:</h4>
-                    <input type="text" id="qA" placeholder="Đáp án A">
-                    <input type="text" id="qB" placeholder="Đáp án B">
-                    <input type="text" id="qC" placeholder="Đáp án C">
-                    <input type="text" id="qD" placeholder="Đáp án D">
+                <div id="quizForm" style="background:#f1f2f6; padding:10px; border-radius:5px">
+                    <div class="quiz-grid">
+                        <input id="qA" placeholder="Đáp án A"><input id="qB" placeholder="Đáp án B">
+                        <input id="qC" placeholder="Đáp án C"><input id="qD" placeholder="Đáp án D">
+                    </div>
                     <label>Đáp án đúng:</label>
-                    <select id="qCorrect">
-                        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
-                    </select>
+                    <select id="qCorrect"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
                 </div>
+                <button onclick="postManual()" style="margin-top:10px">Đăng Bài Này</button>
+            </div>
 
-                <button onclick="postContent()" style="margin-top: 15px;">Đăng Bài Ngay</button>
+            <div class="card">
+                <h3>2. Nhập Câu Hỏi Từ Excel (Hàng loạt)</h3>
+                <div class="import-box">
+                    <p>File Excel 7 cột: <b>Câu hỏi | A | B | C | D | Đáp án đúng (A/B..) | Khối</b></p>
+                    <input type="file" id="excelQuizFile">
+                    <button onclick="importQuiz()" class="btn-success">🚀 Nhập Câu Hỏi Từ Excel</button>
+                    <p id="quizImportMsg" style="font-weight:bold; margin-top:10px"></p>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, setDoc, doc } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = {
+    // --- CẤU HÌNH (Đã điền sẵn) ---
+   const firebaseConfig = {
   apiKey: "AIzaSyBTNqV64uDH4lCqbgYz3_c7YBwA7LCmTMw",
   authDomain: "tinhoc-1845e.firebaseapp.com",
   projectId: "tinhoc-1845e",
@@ -178,139 +183,193 @@
     const db = getFirestore(app);
     const DOMAIN = "@tinoc.com";
 
-    // --- GLOBAL FUNCTIONS ---
+    // --- HÀM CHUNG ---
     window.login = async () => {
         let u = document.getElementById('loginUser').value.trim();
         let p = document.getElementById('loginPass').value.trim();
         if(!u.includes("@")) u += DOMAIN;
         try { await signInWithEmailAndPassword(auth, u, p); }
-        catch(e) { document.getElementById('loginMsg').innerText = "Sai tài khoản hoặc mật khẩu!"; }
+        catch(e) { document.getElementById('loginMsg').innerText = "Đăng nhập thất bại!"; }
     }
     window.logout = () => signOut(auth);
-    
-    window.switchTab = (tabId) => {
+
+    window.switchTab = (id) => {
         ['tab-home', 'tab-users', 'tab-create'].forEach(t => document.getElementById(t).classList.add('hidden'));
-        document.getElementById(tabId).classList.remove('hidden');
+        document.getElementById(id).classList.remove('hidden');
         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     }
 
-    window.togglePostForm = () => {
-        const type = document.getElementById('postType').value;
-        if(type === 'quiz') document.getElementById('quizSection').classList.remove('hidden');
-        else document.getElementById('quizSection').classList.add('hidden');
+    window.toggleType = () => {
+        if(document.getElementById('pType').value === 'quiz') document.getElementById('quizForm').classList.remove('hidden');
+        else document.getElementById('quizForm').classList.add('hidden');
     }
 
-    // --- ADMIN LOGIC ---
+    // --- QUẢN LÝ HỌC SINH (CÓ IMPORT EXCEL) ---
+    
+    // 1. Tạo thủ công (Fix lỗi treo)
     window.createUser = async () => {
         const u = document.getElementById('newU').value.trim();
         const p = document.getElementById('newP').value.trim();
+        const g = document.getElementById('newGrade').value;
         if(!u || !p) return alert("Thiếu thông tin");
-        
-        document.getElementById('userMsg').innerText = "Đang tạo...";
+
+        document.getElementById('createMsg').innerText = "Đang tạo...";
+        let tempApp;
         try {
-            const tempApp = initializeApp(firebaseConfig, "Temp");
+            tempApp = initializeApp(firebaseConfig, "Temp" + Date.now());
             await createUserWithEmailAndPassword(getAuth(tempApp), u + DOMAIN, p);
-            await signOut(getAuth(tempApp));
+            await setDoc(doc(db, "users_list", u), { username: u, password: p, grade: g, createdAt: serverTimestamp() });
             
-            await setDoc(doc(db, "users_list", u), { username: u, password: p, createdAt: serverTimestamp() });
-            
-            alert(`Đã tạo: ${u}`);
+            document.getElementById('createMsg').innerText = `✅ Đã tạo: ${u} (Khối ${g})`;
             document.getElementById('newU').value = "";
-            loadUserList();
-        } catch(e) { alert("Lỗi: " + e.message); }
+            loadUsers();
+        } catch(e) { document.getElementById('createMsg').innerText = "Lỗi: " + e.code; }
+        finally { if(tempApp) deleteApp(tempApp); }
     }
 
-    async function loadUserList() {
+    // 2. Import Excel Học Sinh
+    window.importUsers = () => {
+        const file = document.getElementById('excelUserFile').files[0];
+        if(!file) return alert("Chưa chọn file Excel!");
+        
+        readXlsxFile(file).then(async (rows) => {
+            const msg = document.getElementById('importMsg');
+            msg.innerText = `Đang đọc ${rows.length} dòng... Vui lòng đợi, KHÔNG tắt web!`;
+            
+            let count = 0;
+            for(let i = 0; i < rows.length; i++) { // Bỏ qua dòng tiêu đề nếu cần, ở đây đọc hết
+                let name = rows[i][0];
+                let pass = rows[i][1];
+                let grade = rows[i][2];
+
+                // Bỏ qua nếu dòng tiêu đề
+                if(name == "Tên ĐN" || !name) continue; 
+                // Chuyển đổi dữ liệu về chuỗi
+                name = String(name).trim(); 
+                pass = String(pass).trim();
+                
+                try {
+                    let tempApp = initializeApp(firebaseConfig, "Import" + i);
+                    await createUserWithEmailAndPassword(getAuth(tempApp), name + DOMAIN, pass);
+                    await setDoc(doc(db, "users_list", name), { username: name, password: pass, grade: grade, createdAt: serverTimestamp() });
+                    await deleteApp(tempApp);
+                    count++;
+                    msg.innerText = `Đã tạo ${count} tài khoản...`;
+                } catch(e) { console.log("Lỗi dòng " + i, e); }
+            }
+            msg.innerText = `🎉 Hoàn tất! Đã thêm ${count} học sinh.`;
+            loadUsers();
+        });
+    }
+
+    async function loadUsers() {
         const snap = await getDocs(query(collection(db, "users_list"), orderBy("createdAt", "desc")));
-        let html = "<table><tr><th>Tên ĐN</th><th>Mật khẩu</th></tr>";
-        snap.forEach(d => { const dat = d.data(); html += `<tr><td>${dat.username}</td><td>${dat.password}</td></tr>`; });
+        let html = "<table><tr><th>Tên</th><th>Mật khẩu</th><th>Khối</th></tr>";
+        snap.forEach(d => { const dt = d.data(); html += `<tr><td>${dt.username}</td><td>${dt.password}</td><td>${dt.grade}</td></tr>`; });
         document.getElementById('userTable').innerHTML = html + "</table>";
     }
 
-    window.postContent = async () => {
-        const type = document.getElementById('postType').value;
-        const grade = document.getElementById('postGrade').value;
+    // --- SOẠN ĐỀ (CÓ IMPORT EXCEL) ---
+
+    // 1. Đăng thủ công
+    window.postManual = async () => {
+        const type = document.getElementById('pType').value;
+        const grade = document.getElementById('pGrade').value;
         const title = document.getElementById('pTitle').value;
         const content = document.getElementById('pContent').value;
-        const link = document.getElementById('pLink').value;
         
-        if(grade == 0 || !title) return alert("Chọn Khối và nhập Tiêu đề!");
-        
-        const data = {
-            type, grade, title, content, link,
-            createdAt: serverTimestamp(), createdBy: auth.currentUser.email
-        };
+        if(grade == 0 || !title) return alert("Thiếu Khối hoặc Tiêu đề");
 
+        const data = { type, grade, title, content, createdAt: serverTimestamp(), createdBy: auth.currentUser.email };
         if(type === 'quiz') {
             data.quizData = {
-                A: document.getElementById('qA').value,
-                B: document.getElementById('qB').value,
-                C: document.getElementById('qC').value,
-                D: document.getElementById('qD').value,
+                A: document.getElementById('qA').value, B: document.getElementById('qB').value,
+                C: document.getElementById('qC').value, D: document.getElementById('qD').value,
                 correct: document.getElementById('qCorrect').value
             };
         }
-
         await addDoc(collection(db, "questions"), data);
-        alert("Đã đăng!");
-        document.getElementById('pTitle').value = "";
-        loadQuestions();
+        alert("Đăng thành công!"); loadQuestions();
     }
 
-    // --- APP LOGIC ---
+    // 2. Import Excel Quiz
+    window.importQuiz = () => {
+        const file = document.getElementById('excelQuizFile').files[0];
+        if(!file) return alert("Chưa chọn file!");
+        
+        readXlsxFile(file).then(async (rows) => {
+            const msg = document.getElementById('quizImportMsg');
+            msg.innerText = "Đang xử lý...";
+            let count = 0;
+            
+            const batch = []; // Lưu vào mảng để xử lý
+            for(let i = 0; i < rows.length; i++) {
+                // Cấu trúc cột: 0:Câu hỏi, 1:A, 2:B, 3:C, 4:D, 5:Đáp án đúng, 6:Khối
+                let r = rows[i];
+                if(!r[0] || r[0] === "Câu hỏi") continue;
+
+                await addDoc(collection(db, "questions"), {
+                    type: 'quiz',
+                    title: r[0],
+                    content: "Câu hỏi trắc nghiệm",
+                    grade: String(r[6]),
+                    quizData: { A: r[1], B: r[2], C: r[3], D: r[4], correct: String(r[5]).toUpperCase() },
+                    createdAt: serverTimestamp(),
+                    createdBy: auth.currentUser.email
+                });
+                count++;
+            }
+            msg.innerText = `✅ Đã nhập thành công ${count} câu hỏi!`;
+            loadQuestions();
+        });
+    }
+
+    // --- HIỂN THỊ CÂU HỎI ---
     async function loadQuestions() {
         const list = document.getElementById('questionsList');
         const filter = document.getElementById('filterGrade').value;
         list.innerHTML = "Đang tải...";
-        
-        const q = query(collection(db, "questions"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
+        const snap = await getDocs(query(collection(db, "questions"), orderBy("createdAt", "desc")));
         list.innerHTML = "";
-
-        if(snap.empty) { list.innerHTML = "<p>Chưa có bài nào.</p>"; return; }
+        
+        if(snap.empty) { list.innerHTML = "Chưa có bài nào."; return; }
 
         snap.forEach(doc => {
             const d = doc.data();
-            // Bộ lọc Khối
-            if(filter !== 'all' && d.grade !== filter) return;
+            if(filter !== 'all' && d.grade != filter) return; // Lọc khối
 
             const div = document.createElement('div');
             div.className = 'card';
-            
-            let extraHTML = "";
-            if(d.link) extraHTML += `<p><a href="${d.link}" target="_blank" style="color:blue">📂 Bấm vào đây để xem File đề bài</a></p>`;
+            let contentHTML = "";
             
             if(d.type === 'assignment') {
-                extraHTML += `
-                    <hr>
-                    <textarea id="ans-${doc.id}" rows="2" placeholder="Dán link bài làm hoặc nhập nội dung..."></textarea>
-                    <button onclick="submit('${doc.id}')" class="btn-sm" style="margin-top:5px;">Nộp Bài</button>
-                `;
-            } else if (d.type === 'quiz') {
-                extraHTML += `
-                    <div style="margin-top:10px">
-                        <div class="quiz-option" onclick="checkQuiz(this, '${doc.id}', 'A', '${d.quizData.correct}')">A. ${d.quizData.A}</div>
-                        <div class="quiz-option" onclick="checkQuiz(this, '${doc.id}', 'B', '${d.quizData.correct}')">B. ${d.quizData.B}</div>
-                        <div class="quiz-option" onclick="checkQuiz(this, '${doc.id}', 'C', '${d.quizData.correct}')">C. ${d.quizData.C}</div>
-                        <div class="quiz-option" onclick="checkQuiz(this, '${doc.id}', 'D', '${d.quizData.correct}')">D. ${d.quizData.D}</div>
-                        <div id="res-${doc.id}" class="quiz-result"></div>
-                    </div>
-                `;
+                contentHTML = `<p>${d.content}</p><textarea id="ans-${doc.id}" rows="2" placeholder="Bài làm..."></textarea>
+                <button onclick="submit('${doc.id}')" style="margin-top:5px">Nộp</button>`;
+            } else {
+                contentHTML = `<h4 style="margin:0 0 10px 0">${d.title}</h4>
+                <div class="quiz-grid">
+                    <div class="quiz-option" onclick="check(this,'${doc.id}','A','${d.quizData.correct}')">A. ${d.quizData.A}</div>
+                    <div class="quiz-option" onclick="check(this,'${doc.id}','B','${d.quizData.correct}')">B. ${d.quizData.B}</div>
+                    <div class="quiz-option" onclick="check(this,'${doc.id}','C','${d.quizData.correct}')">C. ${d.quizData.C}</div>
+                    <div class="quiz-option" onclick="check(this,'${doc.id}','D','${d.quizData.correct}')">D. ${d.quizData.D}</div>
+                </div>
+                <div id="res-${doc.id}" class="result-box"></div>`;
             }
 
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between">
-                    <h3>${d.title}</h3>
-                    <div>
-                        <span class="tag tag-khoi">Khối ${d.grade}</span>
-                        <span class="tag tag-type">${d.type === 'quiz' ? 'Trắc nghiệm' : 'Tự luận'}</span>
-                    </div>
-                </div>
-                <p>${d.content}</p>
-                ${extraHTML}
-            `;
+            div.innerHTML = `<div style="display:flex; justify-content:space-between">
+                <span style="font-weight:bold; color:#2980b9">[Khối ${d.grade}] ${d.type=='quiz'?'Trắc nghiệm':'Tự luận'}</span>
+            </div>` + contentHTML;
             list.appendChild(div);
         });
+    }
+
+    window.check = (el, id, ch, cor) => {
+        const res = document.getElementById(`res-${id}`);
+        el.parentNode.querySelectorAll('.quiz-option').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        res.style.display = 'block';
+        if(ch == cor) { res.style.background = '#d4edda'; res.style.color='#155724'; res.innerHTML="CHÍNH XÁC!"; }
+        else { res.style.background = '#f8d7da'; res.style.color='#721c24'; res.innerHTML="SAI RỒI! Đáp án là " + cor; }
     }
 
     window.submit = async (id) => {
@@ -320,44 +379,20 @@
         alert("Nộp thành công!");
     }
 
-    window.checkQuiz = (ele, id, choice, correct) => {
-        const res = document.getElementById(`res-${id}`);
-        // Reset styles
-        ele.parentNode.querySelectorAll('.quiz-option').forEach(e => e.classList.remove('selected'));
-        ele.classList.add('selected');
-        
-        res.style.display = 'block';
-        if(choice === correct) {
-            res.style.backgroundColor = '#d4edda';
-            res.style.color = '#155724';
-            res.innerHTML = "🎉 CHÍNH XÁC! Bạn giỏi quá!";
-        } else {
-            res.style.backgroundColor = '#f8d7da';
-            res.style.color = '#721c24';
-            res.innerHTML = "❌ Sai rồi! Đáp án đúng là: " + correct;
-        }
-    }
-
-    // AUTH STATE
     onAuthStateChanged(auth, (user) => {
         if(user) {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            const name = user.email.replace(DOMAIN, "");
-            document.getElementById('uNameDisplay').innerText = name;
-            
-            if(name === "phanthai25" || user.email.includes("admin")) {
+            const n = user.email.replace(DOMAIN, "");
+            document.getElementById('uDisplay').innerText = n;
+            if(n === "phanthai25" || user.email.includes("admin")) {
                 document.getElementById('adminMenu').classList.remove('hidden');
-                loadUserList();
-            } else {
-                document.getElementById('adminMenu').classList.add('hidden');
-            }
+                loadUsers();
+            } else { document.getElementById('adminMenu').classList.add('hidden'); }
             loadQuestions();
         } else {
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('loginUser').value = "";
-            document.getElementById('loginPass').value = "";
         }
     });
 </script>
