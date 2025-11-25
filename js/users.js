@@ -1,18 +1,13 @@
-import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, getDocs, query, orderBy, serverTimestamp, setDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { auth, db, DOMAIN } from './firebase-config.js';
+// 1. QUAN TRỌNG: Thêm 'firebaseConfig' vào dòng import này
+import { auth, db, DOMAIN, firebaseConfig } from './firebase-config.js';
 
-// Firebase config để tạo temp app
-const firebaseConfig = {
-    apiKey: "AIzaSyBTNqV64uDH4lCqbgYz3_c7YBwA7LCmTMw",
-    authDomain: "tinhoc-1845e.firebaseapp.com",
-    projectId: "tinhoc-1845e",
-    storageBucket: "tinhoc-1845e.firebasestorage.app",
-    messagingSenderId: "1057138431640",
-    appId: "1:1057138431640:web:a5f7c257f8b3182e7da2ed",
-    measurementId: "G-JKRLEH0B2T"
-};
+// 2. Import các thư viện Firebase (Giữ nguyên)
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, updatePassword } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { collection, getDocs, query, orderBy, serverTimestamp, setDoc, doc, updateDoc, deleteDoc } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
 // Global variable to store all users
 let allUsers = [];
