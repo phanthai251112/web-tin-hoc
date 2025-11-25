@@ -1,17 +1,20 @@
-// 1. QUAN TRỌNG: Thêm 'firebaseConfig' vào dòng import này
+// js/users.js
+
+// 1. Import biến chung từ config
 import { auth, db, DOMAIN, firebaseConfig } from './firebase-config.js';
 
-// 2. Import các thư viện Firebase (Giữ nguyên)
+// 2. Import App
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+// 3. IMPORT QUAN TRỌNG (Đã kiểm tra kỹ: Có signInWithEmailAndPassword)
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, updatePassword } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, getDocs, query, orderBy, serverTimestamp, setDoc, doc, updateDoc, deleteDoc } 
+
+// 4. Import Database
+import { collection, getDocs, query, orderBy, serverTimestamp, setDoc, doc, deleteDoc, updateDoc } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
-// Global variable to store all users
-let allUsers = [];
-
+// --- 1. TẠO USER ---
 window.createUser = async () => {
     const u = document.getElementById('newU').value.trim();
     const p = document.getElementById('newP').value.trim();
@@ -34,16 +37,13 @@ window.createUser = async () => {
             username: u, password: p, grade: g, createdAt: serverTimestamp() 
         });
         
-        msgEl.innerText = `✅ Đã tạo mới: ${u}`;
+        msgEl.innerText = `✅ Đã tạo: ${u}`;
         msgEl.style.color = "green";
-
     } catch(e) {
         if(e.code === 'auth/email-already-in-use') {
             try {
-                await setDoc(doc(db, "users_list", u), { 
-                    username: u, password: p, grade: g, createdAt: serverTimestamp() 
-                });
-                msgEl.innerText = `🔄 Đã cập nhật thông tin: ${u}`;
+                await setDoc(doc(db, "users_list", u), { username: u, password: p, grade: g, createdAt: serverTimestamp() });
+                msgEl.innerText = `🔄 Đã cập nhật: ${u}`;
                 msgEl.style.color = "#d35400";
             } catch(err) { msgEl.innerText = "Lỗi DB: " + err.message; }
         } else {
@@ -57,81 +57,60 @@ window.createUser = async () => {
     }
 }
 
-// --- 2. ĐỔI MẬT KHẨU (TÍNH NĂNG MỚI) ---
+// --- 2. ĐỔI MẬT KHẨU ---
 window.changeUserPassword = async (username, oldPass) => {
-    const newPass = prompt(`Nhập mật khẩu MỚI cho học sinh "${username}":`);
-    if (!newPass) return; // Nếu bấm hủy hoặc để trống
+    const newPass = prompt(`Đổi mật khẩu cho "${username}".\nNhập mật khẩu MỚI:`);
+    if (!newPass) return;
     if (newPass.length < 6) return alert("❌ Mật khẩu phải từ 6 ký tự trở lên!");
 
-    // Đổi nút bấm thành đang xử lý
     const btnId = `btn-pass-${username}`;
     const btn = document.getElementById(btnId);
-    if(btn) {
-        btn.innerText = "⏳...";
-        btn.disabled = true;
-    }
+    if(btn) { btn.innerText = "⏳..."; btn.disabled = true; }
 
     let tempApp = null;
     try {
-        // 1. Tạo app phụ
+        // Đăng nhập nick học sinh bằng App phụ để đổi pass
         tempApp = initializeApp(firebaseConfig, "Temp_Pass_" + Date.now());
         const tempAuth = getAuth(tempApp);
-
-        // 2. Đăng nhập vào nick học sinh
-        console.log(`Đang đăng nhập vào ${username} để đổi pass...`);
+        
+        // Dòng này chính là chỗ bị lỗi lúc nãy (giờ đã import ở trên cùng rồi)
         const userCredential = await signInWithEmailAndPassword(tempAuth, username + DOMAIN, oldPass);
         
-        // 3. Đổi mật khẩu trên hệ thống (Auth)
         await updatePassword(userCredential.user, newPass);
-        console.log("Đã đổi pass Auth");
+        await updateDoc(doc(db, "users_list", username), { password: newPass });
 
-        // 4. Cập nhật mật khẩu mới vào danh sách hiển thị (Database)
-        await updateDoc(doc(db, "users_list", username), { 
-            password: newPass 
-        });
-
-        alert(`✅ Đã đổi mật khẩu thành công cho: ${username}\nMật khẩu mới: ${newPass}`);
+        alert(`✅ Đã đổi thành công!\nMật khẩu mới là: ${newPass}`);
         window.loadUsers();
-
     } catch (e) {
         console.error(e);
-        if(e.code === 'auth/wrong-password' || e.code === 'auth/invalid-login-credentials') {
-            alert("❌ Lỗi: Mật khẩu cũ lưu trên hệ thống không khớp với thực tế. Không thể đăng nhập để đổi pass.");
-        } else {
-            alert("❌ Lỗi đổi mật khẩu: " + e.message);
-        }
+        alert("❌ Lỗi: " + e.message + "\n(Có thể mật khẩu cũ lưu trên hệ thống không khớp thực tế)");
     } finally {
         if(tempApp) await deleteApp(tempApp);
-        if(btn) {
-            btn.innerHTML = '<i class="fas fa-key"></i> Đổi Pass';
-            btn.disabled = false;
-        }
+        if(btn) { btn.innerHTML = '<i class="fas fa-key"></i> Đổi Pass'; btn.disabled = false; }
     }
 }
 
-// --- 3. XÓA USER (GIỮ NGUYÊN) ---
+// --- 3. XÓA USER ---
 window.deleteUser = async (username, password) => {
     if(!confirm(`⚠️ XÓA VĨNH VIỄN tài khoản "${username}"?`)) return;
     
     const btnId = `btn-del-${username}`;
     const btn = document.getElementById(btnId);
-    if(btn) {
-        btn.innerText = "⏳...";
-        btn.disabled = true;
-    }
+    if(btn) { btn.innerText = "⏳..."; btn.disabled = true; }
 
     let tempApp = null;
     try {
         tempApp = initializeApp(firebaseConfig, "Temp_Delete_" + Date.now());
         const tempAuth = getAuth(tempApp);
-
+        
+        // Dòng này cũng dùng signInWithEmailAndPassword
         const userCredential = await signInWithEmailAndPassword(tempAuth, username + DOMAIN, password);
-        await deleteUser(userCredential.user); // Xóa Auth
-        await deleteDoc(doc(db, "users_list", username)); // Xóa DB
+        
+        await deleteUser(userCredential.user); 
+        await deleteDoc(doc(db, "users_list", username)); 
 
         alert(`✅ Đã xóa hoàn toàn: ${username}`);
         window.loadUsers();
-
     } catch (e) {
         if(e.code === 'auth/wrong-password' || e.code === 'auth/invalid-login-credentials' || e.code === 'auth/user-not-found') {
             if(confirm(`❌ Không tìm thấy user thực tế (hoặc sai pass). Chỉ xóa khỏi danh sách hiển thị nhé?`)) {
@@ -146,22 +125,15 @@ window.deleteUser = async (username, password) => {
     }
 }
 
-// --- 4. TẢI DANH SÁCH (CẬP NHẬT GIAO DIỆN) ---
+// --- 4. TẢI DANH SÁCH ---
 window.loadUsers = async () => {
     const tableDiv = document.getElementById('userTable');
     tableDiv.innerHTML = '<div class="spinner"></div>';
-    
     try {
         const snap = await getDocs(query(collection(db, "users_list"), orderBy("createdAt", "desc")));
+        if(snap.empty) { tableDiv.innerHTML = '<p style="text-align:center; color:gray">Trống.</p>'; return; }
         
-        if(snap.empty) {
-            tableDiv.innerHTML = '<p style="text-align:center; color:gray">Chưa có học sinh nào.</p>';
-            return;
-        }
-        
-        let html = `<table>
-            <tr><th>STT</th><th>Tên ĐN</th><th>Mật Khẩu</th><th>Khối</th><th style="min-width:180px">Hành Động</th></tr>`;
-        
+        let html = `<table><tr><th>STT</th><th>Tên ĐN</th><th>Mật Khẩu</th><th>Khối</th><th>Hành Động</th></tr>`;
         let index = 1;
         snap.forEach(d => {
             const u = d.data();
@@ -176,7 +148,6 @@ window.loadUsers = async () => {
                         onclick="window.changeUserPassword('${u.username}', '${u.password}')">
                         <i class="fas fa-key"></i> Đổi Pass
                     </button>
-
                     <button id="btn-del-${u.username}" class="btn-danger btn-small" 
                         style="background:#c0392b; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer"
                         onclick="window.deleteUser('${u.username}', '${u.password}')">
@@ -186,10 +157,10 @@ window.loadUsers = async () => {
             </tr>`;
         });
         tableDiv.innerHTML = html + "</table>";
-    } catch(e) { tableDiv.innerHTML = "Lỗi tải: " + e.message; }
+    } catch(e) { tableDiv.innerHTML = "Lỗi: " + e.message; }
 }
 
-// --- 5. IMPORT EXCEL (GIỮ NGUYÊN) ---
+// --- 5. IMPORT EXCEL ---
 window.importUsers = async () => {
     const file = document.getElementById('excelUserFile').files[0];
     if(!file) return alert("❌ Chưa chọn file Excel!");
@@ -202,21 +173,17 @@ window.importUsers = async () => {
         const rows = await readXlsxFile(file);
         let count = 0;
         msgEl.innerText = "Đang xử lý...";
-        
         for(let i = 1; i < rows.length; i++) {
             let name = rows[i][0]; let pass = rows[i][1]; let grade = rows[i][2];
             if(!name || name.toString().includes("Tên")) continue;
-            
             name = String(name).trim(); pass = String(pass).trim();
             if(progressBar) progressBar.style.width = Math.round((i/rows.length)*100) + "%";
             msgEl.innerText = `Đang chạy dòng ${i}: ${name}`;
-
             try {
                 let temp = initializeApp(firebaseConfig, "Imp_"+i);
                 await createUserWithEmailAndPassword(getAuth(temp), name + DOMAIN, pass);
                 await deleteApp(temp);
             } catch(e) {}
-
             await setDoc(doc(db, "users_list", name), { username: name, password: pass, grade: grade, createdAt: serverTimestamp() });
             count++;
         }
@@ -225,4 +192,3 @@ window.importUsers = async () => {
         window.loadUsers();
     } catch(e) { msgEl.innerText = "❌ Lỗi file: " + e.message; }
 }
-       
