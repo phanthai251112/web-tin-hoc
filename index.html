@@ -3,157 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống LMS Tin Học V3</title>
+    <title>Hệ Thống LMS Tin Học V4</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     
     <style>
-        :root { --primary: #2980b9; --secondary: #3498db; --dark: #2c3e50; --light: #ecf0f1; --success: #27ae60; --danger: #c0392b; }
-        body { font-family: 'Segoe UI', sans-serif; background: #ecf0f1; margin: 0; height: 100vh; display: flex; overflow: hidden; }
+        :root { 
+            --primary: #8854d0; 
+            --secondary: #a374e8; 
+            --dark: #2c3e50; 
+            --light: #f7f8fc; 
+            --success: #00c985; 
+            --danger: #ff3355; 
+            --warning: #ffa602;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', -apple-system, sans-serif; 
+            background: var(--light); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; 
+        }
         
         /* Sidebar */
-        .sidebar { width: 260px; background: var(--dark); color: white; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; background: var(--primary); font-weight: bold; text-align: center; font-size: 1.2em; }
-        .menu-item { padding: 15px 20px; border-bottom: 1px solid #34495e; cursor: pointer; transition: 0.2s; display: flex; gap: 10px; align-items: center; }
-        .menu-item:hover, .menu-item.active { background: var(--secondary); }
+        .sidebar { 
+            width: 280px; 
+            background: linear-gradient(180deg, var(--dark) 0%, #1a252f 100%);
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        }
+        .sidebar-header { 
+            padding: 25px 20px; 
+            background: var(--primary); 
+            font-weight: 700; 
+            text-align: center; 
+            font-size: 1.3em; 
+            letter-spacing: 0.5px;
+        }
+        .menu-item { 
+            padding: 16px 24px; 
+            border-bottom: 1px solid rgba(255,255,255,0.08); 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            display: flex; 
+            gap: 12px; 
+            align-items: center;
+            font-size: 0.95em;
+        }
+        .menu-item:hover { background: rgba(136,84,208,0.2); transform: translateX(4px); }
+        .menu-item.active { background: var(--primary); border-left: 4px solid var(--warning); }
+        .menu-item i { width: 20px; }
         
         /* Main */
-        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .main-content { 
+            flex: 1; 
+            padding: 30px; 
+            overflow-y: auto; 
+            background: var(--light);
+        }
         .hidden { display: none !important; }
         
         /* UI Components */
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #bdc3c7; border-radius: 5px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-        button.btn-success { background: var(--success); }
+        .card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06); 
+            margin-bottom: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin: 8px 0; 
+            border: 2px solid #e1e8ed; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 0.95em;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(136,84,208,0.1);
+        }
+        
+        button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(136,84,208,0.3);
+        }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(136,84,208,0.4);
+        }
+        button:active { transform: translateY(0); }
+        button.btn-success { background: var(--success); box-shadow: 0 4px 12px rgba(0,201,133,0.3); }
+        button.btn-danger { background: var(--danger); box-shadow: 0 4px 12px rgba(255,51,85,0.3); }
         
         /* Login */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 999; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; width: 350px; text-align: center; }
+        #loginScreen { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: linear-gradient(135deg, var(--primary) 0%, #6c3fb5 100%);
+            z-index: 999; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+        .login-box { 
+            background: white; 
+            padding: 50px 40px; 
+            border-radius: 16px; 
+            width: 400px; 
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-box h2 { 
+            color: var(--primary); 
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
 
-        /* Quiz Style */
-        .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .quiz-option { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; cursor: pointer; border-radius: 5px; }
-        .quiz-option.selected { background: var(--secondary); color: white; border-color: var(--primary); }
-        .result-box { margin-top: 10px; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; display: none; }
+        /* Quiz Style - Quizizz-like */
+        .quiz-container { 
+            background: white; 
+            border-radius: 16px; 
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .quiz-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .quiz-timer { 
+            background: var(--warning); 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1em;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .quiz-score {
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        .question-title { 
+            font-size: 1.4em; 
+            font-weight: 600; 
+            color: #2c3e50;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .quiz-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 16px; 
+        }
+        .quiz-option { 
+            background: #f8f9fb; 
+            border: 3px solid #e1e8ed; 
+            padding: 20px; 
+            cursor: pointer; 
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-size: 1.05em;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            min-height: 80px;
+        }
+        .quiz-option:hover { 
+            transform: translateY(-4px); 
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(136,84,208,0.2);
+        }
+        .quiz-option.selected { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+        .quiz-option.correct { 
+            background: var(--success); 
+            color: white; 
+            border-color: var(--success);
+            animation: correctBounce 0.5s;
+        }
+        .quiz-option.wrong { 
+            background: var(--danger); 
+            color: white; 
+            border-color: var(--danger);
+            animation: shake 0.5s;
+        }
+        @keyframes correctBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .result-box { 
+            margin-top: 20px; 
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-weight: 700;
+            font-size: 1.2em;
+            display: none;
+            animation: slideDown 0.5s;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         
         /* Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #eee; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            font-size: 0.92em;
+        }
+        th, td { 
+            border: 1px solid #e1e8ed; 
+            padding: 12px; 
+            text-align: left; 
+        }
+        th { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover { background: #f8f9fb; }
 
         /* Import Box */
-        .import-box { border: 2px dashed #bdc3c7; padding: 15px; background: #f9f9f9; text-align: center; margin-top: 10px; border-radius: 5px; }
+        .import-box { 
+            border: 3px dashed #bdc3c7; 
+            padding: 30px; 
+            background: #f9fafb; 
+            text-align: center; 
+            margin-top: 15px; 
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .import-box:hover { border-color: var(--primary); background: #f0f2ff; }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e8ed;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .badge-primary { background: var(--primary); color: white; }
+        .badge-success { background: var(--success); color: white; }
+        .badge-warning { background: var(--warning); color: white; }
     </style>
 </head>
 <body>
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color: var(--primary);">QUẢN LÝ TIN HỌC</h2>
+        <h2><i class="fas fa-graduation-cap"></i> HỆ THỐNG LMS</h2>
         <input type="text" id="loginUser" placeholder="Tên đăng nhập">
         <input type="password" id="loginPass" placeholder="Mật khẩu">
-        <button onclick="login()" style="width:100%">Đăng Nhập</button>
-        <p id="loginMsg" style="color:red; margin-top:10px; font-size:0.9em"></p>
+        <button onclick="login()" style="width:100%; margin-top:10px">
+            <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+        </button>
+        <p id="loginMsg" style="color:red; margin-top:15px; font-size:0.9em"></p>
     </div>
 </div>
 
-<div id="mainApp" class="hidden" style="display:flex; height:100%">
+<div id="mainApp" class="hidden" style="display:flex; height:100%; width:100%">
     <div class="sidebar">
-        <div class="sidebar-header">ADMIN PANEL</div>
-        <div class="menu-item active" onclick="switchTab('tab-home')"><i class="fas fa-home"></i> Trang Chủ / Bài Tập</div>
+        <div class="sidebar-header">
+            <i class="fas fa-book-open"></i> ADMIN PANEL
+        </div>
+        <div class="menu-item active" onclick="switchTab('tab-home')">
+            <i class="fas fa-home"></i> Trang Chủ / Bài Tập
+        </div>
         
         <div id="adminMenu" class="hidden">
-            <div class="menu-item" onclick="switchTab('tab-users')"><i class="fas fa-users"></i> Quản Lý Học Sinh</div>
-            <div class="menu-item" onclick="switchTab('tab-create')"><i class="fas fa-file-alt"></i> Soạn Đề / Import</div>
+            <div class="menu-item" onclick="switchTab('tab-users')">
+                <i class="fas fa-users"></i> Quản Lý Học Sinh
+            </div>
+            <div class="menu-item" onclick="switchTab('tab-create')">
+                <i class="fas fa-file-alt"></i> Soạn Đề / Import
+            </div>
         </div>
 
         <div style="flex:1"></div>
-        <div class="menu-item" onclick="logout()" style="background:#c0392b"><i class="fas fa-sign-out-alt"></i> Đăng Xuất <span id="uDisplay" style="margin-left:5px; font-size:0.8em"></span></div>
+        <div class="menu-item" onclick="logout()" style="background:#c0392b">
+            <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+            <span id="uDisplay" style="margin-left:auto; font-size:0.85em; opacity:0.9"></span>
+        </div>
     </div>
 
     <div class="main-content">
+        <!-- TAB HOME -->
         <div id="tab-home">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-                <h2>📚 Danh Sách Bài Tập</h2>
-                <select id="filterGrade" onchange="loadQuestions()" style="width:150px">
-                    <option value="all">Tất cả Khối</option>
-                    <option value="6">Khối 6</option><option value="7">Khối 7</option>
-                    <option value="8">Khối 8</option><option value="9">Khối 9</option>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                <h2 style="color:var(--dark)">
+                    <i class="fas fa-clipboard-list"></i> Danh Sách Bài Tập
+                </h2>
+                <select id="filterGrade" onchange="loadQuestions()" style="width:180px">
+                    <option value="all">📚 Tất cả Khối</option>
+                    <option value="6">📕 Khối 6</option>
+                    <option value="7">📗 Khối 7</option>
+                    <option value="8">📘 Khối 8</option>
+                    <option value="9">📙 Khối 9</option>
                 </select>
             </div>
-            <div id="questionsList">Đang tải...</div>
+            <div id="questionsList">
+                <div class="spinner"></div>
+            </div>
         </div>
 
+        <!-- TAB USERS -->
         <div id="tab-users" class="hidden">
-            <h2>👥 Quản Lý Học Sinh</h2>
+            <h2 style="color:var(--dark); margin-bottom:20px">
+                <i class="fas fa-user-graduate"></i> Quản Lý Học Sinh
+            </h2>
             
             <div class="card">
-                <h3>1. Tạo Thủ Công (Từng người)</h3>
-                <div style="display:flex; gap:10px">
-                    <input type="text" id="newU" placeholder="Tên HS (VD: nam_lop6)">
-                    <input type="text" id="newP" placeholder="Mật khẩu">
+                <h3 style="color:var(--primary); margin-bottom:15px">
+                    <i class="fas fa-user-plus"></i> 1. Tạo Thủ Công (Từng người)
+                </h3>
+                <div style="display:flex; gap:10px; flex-wrap:wrap">
+                    <input type="text" id="newU" placeholder="Tên HS (VD: nam_lop6)" style="flex:1; min-width:200px">
+                    <input type="text" id="newP" placeholder="Mật khẩu" style="flex:1; min-width:150px">
                     <select id="newGrade" style="width:120px">
-                        <option value="6">Khối 6</option><option value="7">Khối 7</option>
-                        <option value="8">Khối 8</option><option value="9">Khối 9</option>
+                        <option value="6">Khối 6</option>
+                        <option value="7">Khối 7</option>
+                        <option value="8">Khối 8</option>
+                        <option value="9">Khối 9</option>
                     </select>
-                    <button onclick="createUser()">Tạo</button>
+                    <button onclick="createUser()">
+                        <i class="fas fa-plus-circle"></i> Tạo
+                    </button>
                 </div>
-                <p id="createMsg" style="color:blue"></p>
+                <p id="createMsg" style="color:var(--primary); margin-top:10px; font-weight:600"></p>
             </div>
 
             <div class="card">
-                <h3>2. Nhập Từ Excel (Cả danh sách lớp)</h3>
+                <h3 style="color:var(--success); margin-bottom:15px">
+                    <i class="fas fa-file-excel"></i> 2. Nhập Từ Excel (Cả danh sách lớp)
+                </h3>
                 <div class="import-box">
-                    <p>Chọn file Excel (.xlsx) gồm 3 cột: <b>Tên ĐN | Mật khẩu | Khối</b></p>
-                    <input type="file" id="excelUserFile">
-                    <button onclick="importUsers()" class="btn-success">🚀 Bắt Đầu Nhập Danh Sách</button>
-                    <p id="importMsg" style="margin-top:10px; font-weight:bold"></p>
+                    <p style="margin-bottom:15px; font-size:1.05em">
+                        Chọn file Excel (.xlsx) gồm <strong>3 cột</strong>: 
+                        <span class="badge badge-primary">Tên ĐN</span>
+                        <span class="badge badge-warning">Mật khẩu</span>
+                        <span class="badge badge-success">Khối</span>
+                    </p>
+                    <input type="file" id="excelUserFile" accept=".xlsx,.xls" style="margin-bottom:15px">
+                    <button onclick="importUsers()" class="btn-success">
+                        <i class="fas fa-rocket"></i> Bắt Đầu Nhập Danh Sách
+                    </button>
+                    <div id="importProgress" class="hidden" style="margin-top:15px">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="importProgressBar"></div>
+                        </div>
+                    </div>
+                    <p id="importMsg" style="margin-top:15px; font-weight:700; font-size:1.1em"></p>
                 </div>
             </div>
 
             <div class="card">
-                <h3>Danh Sách Tài Khoản</h3>
-                <div id="userTable"></div>
+                <h3 style="color:var(--dark); margin-bottom:15px">
+                    <i class="fas fa-list"></i> Danh Sách Tài Khoản
+                </h3>
+                <div id="userTable">
+                    <div class="spinner"></div>
+                </div>
             </div>
         </div>
 
+        <!-- TAB CREATE -->
         <div id="tab-create" class="hidden">
-            <h2>📝 Soạn Thảo & Nhập Đề</h2>
+            <h2 style="color:var(--dark); margin-bottom:20px">
+                <i class="fas fa-edit"></i> Soạn Thảo & Nhập Đề
+            </h2>
             
             <div class="card">
-                <h3>1. Đăng Bài Thủ Công</h3>
+                <h3 style="color:var(--primary); margin-bottom:15px">
+                    <i class="fas fa-pencil-alt"></i> 1. Đăng Bài Thủ Công
+                </h3>
                 <select id="pType" onchange="toggleType()">
-                    <option value="quiz">Trắc Nghiệm (Quiz)</option>
-                    <option value="assignment">Tự Luận / File</option>
+                    <option value="quiz">✅ Trắc Nghiệm (Quiz)</option>
+                    <option value="assignment">📝 Tự Luận / File</option>
                 </select>
                 <select id="pGrade">
                     <option value="0">-- Chọn Khối --</option>
-                    <option value="6">Khối 6</option><option value="7">Khối 7</option>
-                    <option value="8">Khối 8</option><option value="9">Khối 9</option>
+                    <option value="6">📕 Khối 6</option>
+                    <option value="7">📗 Khối 7</option>
+                    <option value="8">📘 Khối 8</option>
+                    <option value="9">📙 Khối 9</option>
                 </select>
                 <input type="text" id="pTitle" placeholder="Tiêu đề câu hỏi / bài tập">
-                <textarea id="pContent" rows="2" placeholder="Nội dung câu hỏi..."></textarea>
+                <textarea id="pContent" rows="3" placeholder="Nội dung câu hỏi..."></textarea>
                 
-                <div id="quizForm" style="background:#f1f2f6; padding:10px; border-radius:5px">
+                <div id="quizForm" style="background:#f8f9fb; padding:20px; border-radius:10px; margin-top:10px">
                     <div class="quiz-grid">
-                        <input id="qA" placeholder="Đáp án A"><input id="qB" placeholder="Đáp án B">
-                        <input id="qC" placeholder="Đáp án C"><input id="qD" placeholder="Đáp án D">
+                        <input id="qA" placeholder="📌 Đáp án A">
+                        <input id="qB" placeholder="📌 Đáp án B">
+                        <input id="qC" placeholder="📌 Đáp án C">
+                        <input id="qD" placeholder="📌 Đáp án D">
                     </div>
-                    <label>Đáp án đúng:</label>
-                    <select id="qCorrect"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+                    <label style="display:block; margin-top:15px; font-weight:600">Đáp án đúng:</label>
+                    <select id="qCorrect">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
                 </div>
-                <button onclick="postManual()" style="margin-top:10px">Đăng Bài Này</button>
+                <button onclick="postManual()" style="margin-top:15px; width:100%">
+                    <i class="fas fa-paper-plane"></i> Đăng Bài Này
+                </button>
             </div>
 
             <div class="card">
-                <h3>2. Nhập Câu Hỏi Từ Excel (Hàng loạt)</h3>
+                <h3 style="color:var(--success); margin-bottom:15px">
+                    <i class="fas fa-file-excel"></i> 2. Nhập Câu Hỏi Từ Excel (Hàng loạt)
+                </h3>
                 <div class="import-box">
-                    <p>File Excel 7 cột: <b>Câu hỏi | A | B | C | D | Đáp án đúng (A/B..) | Khối</b></p>
-                    <input type="file" id="excelQuizFile">
-                    <button onclick="importQuiz()" class="btn-success">🚀 Nhập Câu Hỏi Từ Excel</button>
-                    <p id="quizImportMsg" style="font-weight:bold; margin-top:10px"></p>
+                    <p style="margin-bottom:15px; font-size:1.05em">
+                        File Excel <strong>7 cột</strong>: 
+                        <span class="badge badge-primary">Câu hỏi</span>
+                        <span class="badge badge-warning">A</span>
+                        <span class="badge badge-warning">B</span>
+                        <span class="badge badge-warning">C</span>
+                        <span class="badge badge-warning">D</span>
+                        <span class="badge badge-success">Đáp án đúng (A/B/C/D)</span>
+                        <span class="badge badge-primary">Khối</span>
+                    </p>
+                    <input type="file" id="excelQuizFile" accept=".xlsx,.xls" style="margin-bottom:15px">
+                    <button onclick="importQuiz()" class="btn-success">
+                        <i class="fas fa-rocket"></i> Nhập Câu Hỏi Từ Excel
+                    </button>
+                    <div id="quizImportProgress" class="hidden" style="margin-top:15px">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="quizProgressBar"></div>
+                        </div>
+                    </div>
+                    <p id="quizImportMsg" style="font-weight:700; margin-top:15px; font-size:1.1em"></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color:var(--warning); margin-bottom:15px">
+                    <i class="fas fa-file-word"></i> 3. Nhập Câu Hỏi Từ Word (.docx)
+                </h3>
+                <div class="import-box">
+                    <p style="margin-bottom:15px; font-size:1.05em">
+                        File Word định dạng:<br>
+                        <strong>Câu 1: [Nội dung câu hỏi]</strong><br>
+                        A. [Đáp án A]<br>
+                        B. [Đáp án B]<br>
+                        C. [Đáp án C]<br>
+                        D. [Đáp án D]<br>
+                        <strong>Đáp án: A</strong><br>
+                        <strong>Khối: 6</strong>
+                    </p>
+                    <input type="file" id="wordQuizFile" accept=".docx" style="margin-bottom:15px">
+                    <select id="wordGrade" style="width:150px; margin-bottom:15px">
+                        <option value="6">Khối 6</option>
+                        <option value="7">Khối 7</option>
+                        <option value="8">Khối 8</option>
+                        <option value="9">Khối 9</option>
+                    </select>
+                    <button onclick="importWord()" class="btn-success">
+                        <i class="fas fa-rocket"></i> Nhập Từ Word
+                    </button>
+                    <p id="wordImportMsg" style="font-weight:700; margin-top:15px; font-size:1.1em"></p>
                 </div>
             </div>
         </div>
@@ -164,237 +550,582 @@
     import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, setDoc, doc } 
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, setDoc, doc, getDoc } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CẤU HÌNH (Đã điền sẵn) ---
-   const firebaseConfig = {
-  apiKey: "AIzaSyBTNqV64uDH4lCqbgYz3_c7YBwA7LCmTMw",
-  authDomain: "tinhoc-1845e.firebaseapp.com",
-  projectId: "tinhoc-1845e",
-  storageBucket: "tinhoc-1845e.firebasestorage.app",
-  messagingSenderId: "1057138431640",
-  appId: "1:1057138431640:web:a5f7c257f8b3182e7da2ed",
-  measurementId: "G-JKRLEH0B2T"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyBTNqV64uDH4lCqbgYz3_c7YBwA7LCmTMw",
+        authDomain: "tinhoc-1845e.firebaseapp.com",
+        projectId: "tinhoc-1845e",
+        storageBucket: "tinhoc-1845e.firebasestorage.app",
+        messagingSenderId: "1057138431640",
+        appId: "1:1057138431640:web:a5f7c257f8b3182e7da2ed",
+        measurementId: "G-JKRLEH0B2T"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const DOMAIN = "@tinoc.com";
 
-    // --- HÀM CHUNG ---
+    // Global state
+    let currentUser = null;
+    let userAnswers = {};
+
+    // --- LOGIN & AUTH ---
     window.login = async () => {
         let u = document.getElementById('loginUser').value.trim();
         let p = document.getElementById('loginPass').value.trim();
+        if(!u || !p) return alert("Vui lòng nhập đầy đủ thông tin!");
         if(!u.includes("@")) u += DOMAIN;
-        try { await signInWithEmailAndPassword(auth, u, p); }
-        catch(e) { document.getElementById('loginMsg').innerText = "Đăng nhập thất bại!"; }
+        
+        const msgEl = document.getElementById('loginMsg');
+        msgEl.innerText = "Đang đăng nhập...";
+        
+        try { 
+            await signInWithEmailAndPassword(auth, u, p); 
+            msgEl.innerText = "";
+        }
+        catch(e) { 
+            msgEl.innerText = "❌ Đăng nhập thất bại! Kiểm tra lại tên đăng nhập và mật khẩu."; 
+        }
     }
-    window.logout = () => signOut(auth);
+
+    window.logout = () => {
+        if(confirm("Bạn có chắc muốn đăng xuất?")) {
+            signOut(auth);
+        }
+    }
 
     window.switchTab = (id) => {
-        ['tab-home', 'tab-users', 'tab-create'].forEach(t => document.getElementById(t).classList.add('hidden'));
+        ['tab-home', 'tab-users', 'tab-create'].forEach(t => 
+            document.getElementById(t).classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Load data khi chuyển tab
+        if(id === 'tab-home') loadQuestions();
+        if(id === 'tab-users') loadUsers();
     }
 
     window.toggleType = () => {
-        if(document.getElementById('pType').value === 'quiz') document.getElementById('quizForm').classList.remove('hidden');
-        else document.getElementById('quizForm').classList.add('hidden');
+        const isQuiz = document.getElementById('pType').value === 'quiz';
+        document.getElementById('quizForm').classList.toggle('hidden', !isQuiz);
     }
 
-    // --- QUẢN LÝ HỌC SINH (CÓ IMPORT EXCEL) ---
-    
-    // 1. Tạo thủ công (Fix lỗi treo)
+    // --- QUẢN LÝ HỌC SINH ---
     window.createUser = async () => {
         const u = document.getElementById('newU').value.trim();
         const p = document.getElementById('newP').value.trim();
         const g = document.getElementById('newGrade').value;
-        if(!u || !p) return alert("Thiếu thông tin");
-
-        document.getElementById('createMsg').innerText = "Đang tạo...";
-        let tempApp;
+        
+        if(!u || !p) return alert("❌ Thiếu thông tin!");
+        
+        const msgEl = document.getElementById('createMsg');
+        msgEl.innerText = "⏳ Đang tạo tài khoản...";
+        msgEl.style.color = "orange";
+        
+        let tempApp = null;
         try {
-            tempApp = initializeApp(firebaseConfig, "Temp" + Date.now());
-            await createUserWithEmailAndPassword(getAuth(tempApp), u + DOMAIN, p);
-            await setDoc(doc(db, "users_list", u), { username: u, password: p, grade: g, createdAt: serverTimestamp() });
+            // Tạo app tạm để không ảnh hưởng session hiện tại
+            tempApp = initializeApp(firebaseConfig, "Temp_" + Date.now());
+            const tempAuth = getAuth(tempApp);
             
-            document.getElementById('createMsg').innerText = `✅ Đã tạo: ${u} (Khối ${g})`;
+            await createUserWithEmailAndPassword(tempAuth, u + DOMAIN, p);
+            await setDoc(doc(db, "users_list", u), { 
+                username: u, 
+                password: p, 
+                grade: g, 
+                createdAt: serverTimestamp() 
+            });
+            
+            msgEl.innerText = `✅ Thành công! Đã tạo: ${u} (Khối ${g})`;
+            msgEl.style.color = "var(--success)";
+            
             document.getElementById('newU').value = "";
-            loadUsers();
-        } catch(e) { document.getElementById('createMsg').innerText = "Lỗi: " + e.code; }
-        finally { if(tempApp) deleteApp(tempApp); }
+            document.getElementById('newP').value = "";
+            
+            setTimeout(() => loadUsers(), 500);
+        } catch(e) { 
+           msgEl.innerText = "❌ Lỗi: " + (e.code === 'auth/email-already-in-use' ? 
+                'Tài khoản đã tồn tại!' : e.message);
+            msgEl.style.color = "var(--danger)";
+        } finally {
+            if(tempApp) {
+                await deleteApp(tempApp);
+            }
+        }
     }
 
-    // 2. Import Excel Học Sinh
-    window.importUsers = () => {
+    // Import Excel Users
+    window.importUsers = async () => {
         const file = document.getElementById('excelUserFile').files[0];
-        if(!file) return alert("Chưa chọn file Excel!");
+        if(!file) return alert("❌ Chưa chọn file Excel!");
         
-        readXlsxFile(file).then(async (rows) => {
-            const msg = document.getElementById('importMsg');
-            msg.innerText = `Đang đọc ${rows.length} dòng... Vui lòng đợi, KHÔNG tắt web!`;
-            
+        const msgEl = document.getElementById('importMsg');
+        const progressBar = document.getElementById('importProgressBar');
+        const progressDiv = document.getElementById('importProgress');
+        
+        progressDiv.classList.remove('hidden');
+        msgEl.innerText = "⏳ Đang đọc file...";
+        msgEl.style.color = "orange";
+        
+        try {
+            const rows = await readXlsxFile(file);
+            const total = rows.length - 1; // Trừ header
             let count = 0;
-            for(let i = 0; i < rows.length; i++) { // Bỏ qua dòng tiêu đề nếu cần, ở đây đọc hết
-                let name = rows[i][0];
-                let pass = rows[i][1];
-                let grade = rows[i][2];
-
-                // Bỏ qua nếu dòng tiêu đề
-                if(name == "Tên ĐN" || !name) continue; 
-                // Chuyển đổi dữ liệu về chuỗi
-                name = String(name).trim(); 
-                pass = String(pass).trim();
+            let errors = 0;
+            
+            msgEl.innerText = `Đang xử lý ${total} học sinh... Vui lòng đợi!`;
+            
+            for(let i = 1; i < rows.length; i++) { // Bỏ qua dòng đầu (header)
+                const name = String(rows[i][0]).trim();
+                const pass = String(rows[i][1]).trim();
+                const grade = String(rows[i][2]).trim();
+                
+                if(!name || !pass) {
+                    errors++;
+                    continue;
+                }
                 
                 try {
-                    let tempApp = initializeApp(firebaseConfig, "Import" + i);
-                    await createUserWithEmailAndPassword(getAuth(tempApp), name + DOMAIN, pass);
-                    await setDoc(doc(db, "users_list", name), { username: name, password: pass, grade: grade, createdAt: serverTimestamp() });
+                    let tempApp = initializeApp(firebaseConfig, "Import_" + Date.now() + "_" + i);
+                    const tempAuth = getAuth(tempApp);
+                    
+                    await createUserWithEmailAndPassword(tempAuth, name + DOMAIN, pass);
+                    await setDoc(doc(db, "users_list", name), { 
+                        username: name, 
+                        password: pass, 
+                        grade: grade, 
+                        createdAt: serverTimestamp() 
+                    });
+                    
                     await deleteApp(tempApp);
                     count++;
-                    msg.innerText = `Đã tạo ${count} tài khoản...`;
-                } catch(e) { console.log("Lỗi dòng " + i, e); }
+                    
+                    // Update progress
+                    const percent = Math.round((count / total) * 100);
+                    progressBar.style.width = percent + "%";
+                    msgEl.innerText = `Đã tạo ${count}/${total} tài khoản...`;
+                    
+                } catch(e) {
+                    console.error("Lỗi dòng " + i, e);
+                    errors++;
+                }
             }
-            msg.innerText = `🎉 Hoàn tất! Đã thêm ${count} học sinh.`;
-            loadUsers();
-        });
+            
+            msgEl.innerText = `🎉 Hoàn tất! Đã thêm ${count} học sinh${errors > 0 ? `, ${errors} lỗi` : ''}.`;
+            msgEl.style.color = "var(--success)";
+            progressBar.style.width = "100%";
+            
+            setTimeout(() => {
+                loadUsers();
+                progressDiv.classList.add('hidden');
+            }, 2000);
+            
+        } catch(e) {
+            msgEl.innerText = "❌ Lỗi đọc file: " + e.message;
+            msgEl.style.color = "var(--danger)";
+            progressDiv.classList.add('hidden');
+        }
     }
 
     async function loadUsers() {
-        const snap = await getDocs(query(collection(db, "users_list"), orderBy("createdAt", "desc")));
-        let html = "<table><tr><th>Tên</th><th>Mật khẩu</th><th>Khối</th></tr>";
-        snap.forEach(d => { const dt = d.data(); html += `<tr><td>${dt.username}</td><td>${dt.password}</td><td>${dt.grade}</td></tr>`; });
-        document.getElementById('userTable').innerHTML = html + "</table>";
+        const tableDiv = document.getElementById('userTable');
+        tableDiv.innerHTML = '<div class="spinner"></div>';
+        
+        try {
+            const snap = await getDocs(query(collection(db, "users_list"), orderBy("createdAt", "desc")));
+            
+            if(snap.empty) {
+                tableDiv.innerHTML = '<p style="text-align:center; color:gray">Chưa có học sinh nào.</p>';
+                return;
+            }
+            
+            let html = `<table>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên Đăng Nhập</th>
+                    <th>Mật Khẩu</th>
+                    <th>Khối</th>
+                </tr>`;
+            
+            let stt = 1;
+            snap.forEach(d => {
+                const dt = d.data();
+                html += `<tr>
+                    <td>${stt++}</td>
+                    <td>${dt.username}</td>
+                    <td>${dt.password}</td>
+                    <td><span class="badge badge-primary">Khối ${dt.grade}</span></td>
+                </tr>`;
+            });
+            
+            tableDiv.innerHTML = html + "</table>";
+        } catch(e) {
+            tableDiv.innerHTML = '<p style="color:red">Lỗi tải danh sách: ' + e.message + '</p>';
+        }
     }
 
-    // --- SOẠN ĐỀ (CÓ IMPORT EXCEL) ---
-
-    // 1. Đăng thủ công
+    // --- SOẠN ĐỀ ---
     window.postManual = async () => {
         const type = document.getElementById('pType').value;
         const grade = document.getElementById('pGrade').value;
-        const title = document.getElementById('pTitle').value;
-        const content = document.getElementById('pContent').value;
+        const title = document.getElementById('pTitle').value.trim();
+        const content = document.getElementById('pContent').value.trim();
         
-        if(grade == 0 || !title) return alert("Thiếu Khối hoặc Tiêu đề");
-
-        const data = { type, grade, title, content, createdAt: serverTimestamp(), createdBy: auth.currentUser.email };
+        if(grade == 0) return alert("❌ Vui lòng chọn khối!");
+        if(!title) return alert("❌ Vui lòng nhập tiêu đề!");
+        
+        const data = { 
+            type, 
+            grade, 
+            title, 
+            content, 
+            createdAt: serverTimestamp(), 
+            createdBy: auth.currentUser.email 
+        };
+        
         if(type === 'quiz') {
-            data.quizData = {
-                A: document.getElementById('qA').value, B: document.getElementById('qB').value,
-                C: document.getElementById('qC').value, D: document.getElementById('qD').value,
-                correct: document.getElementById('qCorrect').value
-            };
+            const a = document.getElementById('qA').value.trim();
+            const b = document.getElementById('qB').value.trim();
+            const c = document.getElementById('qC').value.trim();
+            const d = document.getElementById('qD').value.trim();
+            const correct = document.getElementById('qCorrect').value;
+            
+            if(!a || !b || !c || !d) return alert("❌ Vui lòng nhập đầy đủ 4 đáp án!");
+            
+            data.quizData = { A: a, B: b, C: c, D: d, correct: correct };
         }
-        await addDoc(collection(db, "questions"), data);
-        alert("Đăng thành công!"); loadQuestions();
+        
+        try {
+            await addDoc(collection(db, "questions"), data);
+            alert("✅ Đăng bài thành công!");
+            
+            // Clear form
+            document.getElementById('pTitle').value = "";
+            document.getElementById('pContent').value = "";
+            if(type === 'quiz') {
+                document.getElementById('qA').value = "";
+                document.getElementById('qB').value = "";
+                document.getElementById('qC').value = "";
+                document.getElementById('qD').value = "";
+            }
+            
+            loadQuestions();
+        } catch(e) {
+            alert("❌ Lỗi: " + e.message);
+        }
     }
 
-    // 2. Import Excel Quiz
-    window.importQuiz = () => {
+    // Import Excel Quiz
+    window.importQuiz = async () => {
         const file = document.getElementById('excelQuizFile').files[0];
-        if(!file) return alert("Chưa chọn file!");
+        if(!file) return alert("❌ Chưa chọn file!");
         
-        readXlsxFile(file).then(async (rows) => {
-            const msg = document.getElementById('quizImportMsg');
-            msg.innerText = "Đang xử lý...";
+        const msgEl = document.getElementById('quizImportMsg');
+        const progressBar = document.getElementById('quizProgressBar');
+        const progressDiv = document.getElementById('quizImportProgress');
+        
+        progressDiv.classList.remove('hidden');
+        msgEl.innerText = "⏳ Đang đọc file...";
+        msgEl.style.color = "orange";
+        
+        try {
+            const rows = await readXlsxFile(file);
+            const total = rows.length - 1;
             let count = 0;
             
-            const batch = []; // Lưu vào mảng để xử lý
-            for(let i = 0; i < rows.length; i++) {
-                // Cấu trúc cột: 0:Câu hỏi, 1:A, 2:B, 3:C, 4:D, 5:Đáp án đúng, 6:Khối
-                let r = rows[i];
-                if(!r[0] || r[0] === "Câu hỏi") continue;
-
-                await addDoc(collection(db, "questions"), {
-                    type: 'quiz',
-                    title: r[0],
-                    content: "Câu hỏi trắc nghiệm",
-                    grade: String(r[6]),
-                    quizData: { A: r[1], B: r[2], C: r[3], D: r[4], correct: String(r[5]).toUpperCase() },
-                    createdAt: serverTimestamp(),
-                    createdBy: auth.currentUser.email
-                });
-                count++;
+            msgEl.innerText = `Đang nhập ${total} câu hỏi...`;
+            
+            for(let i = 1; i < rows.length; i++) {
+                const question = String(rows[i][0]).trim();
+                const a = String(rows[i][1]).trim();
+                const b = String(rows[i][2]).trim();
+                const c = String(rows[i][3]).trim();
+                const d = String(rows[i][4]).trim();
+                const correct = String(rows[i][5]).toUpperCase().trim();
+                const grade = String(rows[i][6]).trim();
+                
+                if(!question || !a) continue;
+                
+                try {
+                    await addDoc(collection(db, "questions"), {
+                        type: 'quiz',
+                        title: question,
+                        content: "Câu hỏi trắc nghiệm",
+                        grade: grade,
+                        quizData: { A: a, B: b, C: c, D: d, correct: correct },
+                        createdAt: serverTimestamp(),
+                        createdBy: auth.currentUser.email
+                    });
+                    count++;
+                    
+                    const percent = Math.round((count / total) * 100);
+                    progressBar.style.width = percent + "%";
+                    msgEl.innerText = `Đã nhập ${count}/${total} câu...`;
+                } catch(e) {
+                    console.error("Lỗi dòng " + i, e);
+                }
             }
-            msg.innerText = `✅ Đã nhập thành công ${count} câu hỏi!`;
-            loadQuestions();
-        });
+            
+            msgEl.innerText = `🎉 Hoàn tất! Đã nhập ${count} câu hỏi.`;
+            msgEl.style.color = "var(--success)";
+            progressBar.style.width = "100%";
+            
+            setTimeout(() => {
+                loadQuestions();
+                progressDiv.classList.add('hidden');
+            }, 2000);
+            
+        } catch(e) {
+            msgEl.innerText = "❌ Lỗi: " + e.message;
+            msgEl.style.color = "var(--danger)";
+            progressDiv.classList.add('hidden');
+        }
+    }
+
+    // Import Word Quiz
+    window.importWord = async () => {
+        const file = document.getElementById('wordQuizFile').files[0];
+        if(!file) return alert("❌ Chưa chọn file Word!");
+        
+        const grade = document.getElementById('wordGrade').value;
+        const msgEl = document.getElementById('wordImportMsg');
+        
+        msgEl.innerText = "⏳ Đang đọc file Word...";
+        msgEl.style.color = "orange";
+        
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            const text = result.value;
+            
+            // Parse text theo format
+            const questions = text.split(/Câu \d+:/i).filter(q => q.trim());
+            let count = 0;
+            
+            msgEl.innerText = `Đang xử lý ${questions.length} câu hỏi...`;
+            
+            for(let q of questions) {
+                const lines = q.split('\n').map(l => l.trim()).filter(l => l);
+                if(lines.length < 6) continue;
+                
+                const questionText = lines[0];
+                let a = "", b = "", c = "", d = "", correct = "";
+                
+                for(let line of lines) {
+                    if(line.match(/^A[\.\)]/i)) a = line.replace(/^A[\.\)]\s*/i, '');
+                    else if(line.match(/^B[\.\)]/i)) b = line.replace(/^B[\.\)]\s*/i, '');
+                    else if(line.match(/^C[\.\)]/i)) c = line.replace(/^C[\.\)]\s*/i, '');
+                    else if(line.match(/^D[\.\)]/i)) d = line.replace(/^D[\.\)]\s*/i, '');
+                    else if(line.match(/Đáp án:/i)) {
+                        correct = line.replace(/Đáp án:\s*/i, '').toUpperCase().charAt(0);
+                    }
+                }
+                
+                if(questionText && a && correct) {
+                    await addDoc(collection(db, "questions"), {
+                        type: 'quiz',
+                        title: questionText,
+                        content: "Câu hỏi từ Word",
+                        grade: grade,
+                        quizData: { A: a, B: b, C: c, D: d, correct: correct },
+                        createdAt: serverTimestamp(),
+                        createdBy: auth.currentUser.email
+                    });
+                    count++;
+                    msgEl.innerText = `Đã nhập ${count} câu...`;
+                }
+            }
+            
+            msgEl.innerText = `🎉 Hoàn tất! Đã nhập ${count} câu hỏi từ Word.`;
+            msgEl.style.color = "var(--success)";
+            
+            setTimeout(() => loadQuestions(), 1000);
+            
+        } catch(e) {
+            msgEl.innerText = "❌ Lỗi: " + e.message;
+            msgEl.style.color = "var(--danger)";
+        }
     }
 
     // --- HIỂN THỊ CÂU HỎI ---
     async function loadQuestions() {
         const list = document.getElementById('questionsList');
         const filter = document.getElementById('filterGrade').value;
-        list.innerHTML = "Đang tải...";
-        const snap = await getDocs(query(collection(db, "questions"), orderBy("createdAt", "desc")));
-        list.innerHTML = "";
         
-        if(snap.empty) { list.innerHTML = "Chưa có bài nào."; return; }
-
-        snap.forEach(doc => {
-            const d = doc.data();
-            if(filter !== 'all' && d.grade != filter) return; // Lọc khối
-
-            const div = document.createElement('div');
-            div.className = 'card';
-            let contentHTML = "";
+        list.innerHTML = '<div class="spinner"></div>';
+        
+        try {
+            const snap = await getDocs(query(collection(db, "questions"), orderBy("createdAt", "desc")));
+            list.innerHTML = "";
             
-            if(d.type === 'assignment') {
-                contentHTML = `<p>${d.content}</p><textarea id="ans-${doc.id}" rows="2" placeholder="Bài làm..."></textarea>
-                <button onclick="submit('${doc.id}')" style="margin-top:5px">Nộp</button>`;
-            } else {
-                contentHTML = `<h4 style="margin:0 0 10px 0">${d.title}</h4>
-                <div class="quiz-grid">
-                    <div class="quiz-option" onclick="check(this,'${doc.id}','A','${d.quizData.correct}')">A. ${d.quizData.A}</div>
-                    <div class="quiz-option" onclick="check(this,'${doc.id}','B','${d.quizData.correct}')">B. ${d.quizData.B}</div>
-                    <div class="quiz-option" onclick="check(this,'${doc.id}','C','${d.quizData.correct}')">C. ${d.quizData.C}</div>
-                    <div class="quiz-option" onclick="check(this,'${doc.id}','D','${d.quizData.correct}')">D. ${d.quizData.D}</div>
-                </div>
-                <div id="res-${doc.id}" class="result-box"></div>`;
+            if(snap.empty) { 
+                list.innerHTML = '<div class="card" style="text-align:center; color:gray"><i class="fas fa-inbox" style="font-size:3em; margin-bottom:10px"></i><p>Chưa có bài tập nào.</p></div>'; 
+                return; 
             }
 
-            div.innerHTML = `<div style="display:flex; justify-content:space-between">
-                <span style="font-weight:bold; color:#2980b9">[Khối ${d.grade}] ${d.type=='quiz'?'Trắc nghiệm':'Tự luận'}</span>
-            </div>` + contentHTML;
-            list.appendChild(div);
+            let questionCount = 0;
+            snap.forEach(doc => {
+                const d = doc.data();
+                if(filter !== 'all' && d.grade != filter) return;
+                questionCount++;
+                
+                const div = document.createElement('div');
+                
+                if(d.type === 'assignment') {
+                    div.className = 'card';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px">
+                            <span class="badge badge-warning">📝 Tự Luận</span>
+                            <span class="badge badge-primary">Khối ${d.grade}</span>
+                        </div>
+                        <h3 style="color:var(--dark); margin-bottom:10px">${d.title}</h3>
+                        <p style="color:#666; margin-bottom:15px">${d.content}</p>
+                        <textarea id="ans-${doc.id}" rows="4" placeholder="Nhập bài làm của bạn..."></textarea>
+                        <button onclick="submitAssignment('${doc.id}')" style="margin-top:10px">
+                            <i class="fas fa-paper-plane"></i> Nộp Bài
+                        </button>
+                    `;
+                } else {
+                    div.className = 'quiz-container';
+                    div.innerHTML = `
+                        <div class="quiz-header">
+                            <span class="badge badge-primary">Khối ${d.grade}</span>
+                            <span class="quiz-score" id="score-${doc.id}">Điểm: 0</span>
+                        </div>
+                        <div class="question-title">${d.title}</div>
+                        <div class="quiz-grid">
+                            <div class="quiz-option" onclick="checkAnswer(this,'${doc.id}','A','${d.quizData.correct}')">
+                                <strong style="margin-right:10px">A</strong> ${d.quizData.A}
+                            </div>
+                            <div class="quiz-option" onclick="checkAnswer(this,'${doc.id}','B','${d.quizData.correct}')">
+                                <strong style="margin-right:10px">B</strong> ${d.quizData.B}
+                            </div>
+                            <div class="quiz-option" onclick="checkAnswer(this,'${doc.id}','C','${d.quizData.correct}')">
+                                <strong style="margin-right:10px">C</strong> ${d.quizData.C}
+                            </div>
+                            <div class="quiz-option" onclick="checkAnswer(this,'${doc.id}','D','${d.quizData.correct}')">
+                                <strong style="margin-right:10px">D</strong> ${d.quizData.D}
+                            </div>
+                        </div>
+                        <div id="res-${doc.id}" class="result-box"></div>
+                    `;
+                }
+                
+                list.appendChild(div);
+            });
+            
+            if(questionCount === 0) {
+                list.innerHTML = '<div class="card" style="text-align:center; color:gray"><p>Không có bài tập nào cho khối này.</p></div>';
+            }
+            
+        } catch(e) {
+            list.innerHTML = '<div class="card" style="color:red">❌ Lỗi tải dữ liệu: ' + e.message + '</div>';
+        }
+    }
+
+    // Check Quiz Answer
+    window.checkAnswer = async (el, questionId, choice, correct) => {
+        const resBox = document.getElementById(`res-${questionId}`);
+        const scoreBox = document.getElementById(`score-${questionId}`);
+        const parent = el.parentNode;
+        
+        // Clear previous selections
+        parent.querySelectorAll('.quiz-option').forEach(opt => {
+            opt.classList.remove('selected', 'correct', 'wrong');
+            opt.style.pointerEvents = 'auto';
         });
-    }
-
-    window.check = (el, id, ch, cor) => {
-        const res = document.getElementById(`res-${id}`);
-        el.parentNode.querySelectorAll('.quiz-option').forEach(e => e.classList.remove('selected'));
+        
         el.classList.add('selected');
-        res.style.display = 'block';
-        if(ch == cor) { res.style.background = '#d4edda'; res.style.color='#155724'; res.innerHTML="CHÍNH XÁC!"; }
-        else { res.style.background = '#f8d7da'; res.style.color='#721c24'; res.innerHTML="SAI RỒI! Đáp án là " + cor; }
+        resBox.style.display = 'block';
+        
+        // Disable further clicks
+        parent.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'none');
+        
+        if(choice === correct) {
+            el.classList.add('correct');
+            resBox.style.background = '#d4edda';
+            resBox.style.color = '#155724';
+            resBox.innerHTML = '<i class="fas fa-check-circle"></i> CHÍNH XÁC! Tuyệt vời!';
+            scoreBox.innerText = 'Điểm: 10';
+            scoreBox.style.background = 'var(--success)';
+            
+            // Save to Firebase
+            try {
+                await addDoc(collection(db, "user_scores"), {
+                    userId: auth.currentUser.email,
+                    questionId: questionId,
+                    score: 10,
+                    correct: true,
+                    timestamp: serverTimestamp()
+                });
+            } catch(e) {
+                console.error("Lỗi lưu điểm:", e);
+            }
+        } else {
+            el.classList.add('wrong');
+            resBox.style.background = '#f8d7da';
+            resBox.style.color = '#721c24';
+            resBox.innerHTML = `<i class="fas fa-times-circle"></i> SAI RỒI! Đáp án đúng là <strong>${correct}</strong>`;
+            scoreBox.innerText = 'Điểm: 0';
+            scoreBox.style.background = 'var(--danger)';
+            
+            // Highlight correct answer
+            parent.querySelectorAll('.quiz-option').forEach(opt => {
+                if(opt.innerText.startsWith(correct)) {
+                    opt.classList.add('correct');
+                }
+            });
+        }
     }
 
-    window.submit = async (id) => {
-        const val = document.getElementById(`ans-${id}`).value;
-        if(!val) return alert("Chưa nhập bài!");
-        await addDoc(collection(db, "submissions"), { qid: id, student: auth.currentUser.email, answer: val, time: serverTimestamp() });
-        alert("Nộp thành công!");
+    // Submit Assignment
+    window.submitAssignment = async (questionId) => {
+        const answer = document.getElementById(`ans-${questionId}`).value.trim();
+        if(!answer) return alert("❌ Vui lòng nhập bài làm!");
+        
+        try {
+            await addDoc(collection(db, "submissions"), { 
+                questionId: questionId, 
+                studentEmail: auth.currentUser.email, 
+                answer: answer, 
+                submittedAt: serverTimestamp() 
+            });
+            
+            alert("✅ Nộp bài thành công!");
+            document.getElementById(`ans-${questionId}`).value = "";
+        } catch(e) {
+            alert("❌ Lỗi: " + e.message);
+        }
     }
 
-    onAuthStateChanged(auth, (user) => {
+    // --- AUTH STATE LISTENER ---
+    onAuthStateChanged(auth, async (user) => {
         if(user) {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            const n = user.email.replace(DOMAIN, "");
-            document.getElementById('uDisplay').innerText = n;
-            if(n === "phanthai25" || user.email.includes("admin")) {
+            
+            currentUser = user;
+            const username = user.email.replace(DOMAIN, "");
+            document.getElementById('uDisplay').innerText = username;
+            
+            // Check admin
+            if(username === "phanthai25" || user.email.includes("admin")) {
                 document.getElementById('adminMenu').classList.remove('hidden');
-                loadUsers();
-            } else { document.getElementById('adminMenu').classList.add('hidden'); }
+            } else {
+                document.getElementById('adminMenu').classList.add('hidden');
+            }
+            
             loadQuestions();
         } else {
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
+            currentUser = null;
         }
     });
 </script>
 </body>
-</html>
+</html></parameter>
